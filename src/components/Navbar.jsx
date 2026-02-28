@@ -9,7 +9,6 @@ const navLinks = [
   { label: 'Blog', href: '/blog' },
   { label: 'Depoimentos', href: '/#depoimentos' },
   { label: 'Contato', href: '/#contato' },
-  { label: 'Admin', href: '/admin', color: 'text-red-500 hover:text-red-700' },
 ]
 
 export default function Navbar() {
@@ -40,13 +39,23 @@ export default function Navbar() {
 
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                className={`text-base font-medium transition-colors ${l.color || 'text-gray-600 hover:text-teal-500'}`}
-              >
-                {l.label}
-              </a>
+              l.href.startsWith('/#') ? (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  className={`text-base font-medium transition-colors ${l.color || 'text-gray-600 hover:text-teal-500'}`}
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <Link
+                  key={l.label}
+                  to={l.href}
+                  className={`text-base font-medium transition-colors ${l.color || 'text-gray-600 hover:text-teal-500'}`}
+                >
+                  {l.label}
+                </Link>
+              )
             ))}
           </nav>
 
@@ -80,17 +89,29 @@ export default function Navbar() {
         {open && (
           <div className="md:hidden py-4 border-t border-gray-100">
             {navLinks.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className={`block py-2 text-sm font-medium transition-colors ${l.color || 'text-gray-600 hover:text-teal-500'}`}
-              >
-                {l.label}
-              </a>
+              l.href.startsWith('/#') ? (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className={`block py-2 text-sm font-medium transition-colors ${l.color || 'text-gray-600 hover:text-teal-500'}`}
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <Link
+                  key={l.label}
+                  to={l.href}
+                  onClick={() => setOpen(false)}
+                  className={`block py-2 text-sm font-medium transition-colors ${l.color || 'text-gray-600 hover:text-teal-500'}`}
+                >
+                  {l.label}
+                </Link>
+              )
             ))}
             <Link
               to="/agendamento"
+              onClick={() => setOpen(false)}
               className="mt-3 block text-center bg-teal-500 text-white text-sm font-semibold px-4 py-2 rounded-full"
             >
               Agendar Consulta
