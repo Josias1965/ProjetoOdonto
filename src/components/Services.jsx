@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const services = [
   {
     icon: '🦷',
@@ -63,20 +65,20 @@ export default function Services() {
               </div>
               <h3 className="font-bold text-gray-800 mb-3 text-xl">{s.title}</h3>
               <p className="text-base text-gray-500 leading-relaxed flex-1">{s.desc}</p>
-              <a href="#contato" className="mt-5 inline-flex items-center text-base text-teal-500 font-semibold hover:text-teal-700 transition-colors">
+              <Link to="/agendamento" className="mt-5 inline-flex items-center text-base text-teal-500 font-semibold hover:text-teal-700 transition-colors">
                 Saiba mais →
-              </a>
+              </Link>
             </div>
           ))}
         </div>
 
         <div className="text-center mt-12">
-          <a
-            href="#contato"
+          <Link
+            to="/agendamento"
             className="inline-block border-2 border-teal-500 text-teal-600 font-semibold text-lg px-10 py-3.5 rounded-full hover:bg-teal-500 hover:text-white transition-colors"
           >
             Ver Todos os Serviços
-          </a>
+          </Link>
         </div>
       </div>
     </section>

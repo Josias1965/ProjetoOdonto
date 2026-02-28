@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const doctors = [
   {
     name: 'Dra. Ana Carolina Silva',
@@ -45,23 +47,23 @@ export default function Team() {
               </div>
               <h3 className="font-bold text-gray-800 mb-1 text-xl">{d.name}</h3>
               <p className="text-base text-teal-500 font-medium mb-4">{d.specialty}</p>
-              <a
-                href="#contato"
+              <Link
+                to="/agendamento"
                 className="inline-block bg-teal-500 hover:bg-teal-600 text-white text-base font-semibold px-6 py-2.5 rounded-full transition-colors"
               >
                 Agendar Consulta
-              </a>
+              </Link>
             </div>
           ))}
         </div>
 
         <div className="text-center mt-10">
-          <a
-            href="#equipe"
+          <Link
+            to="/agendamento"
             className="inline-block border-2 border-teal-500 text-teal-600 font-semibold px-8 py-3 rounded-full hover:bg-teal-500 hover:text-white transition-colors"
           >
-            Ver Equipe Completa
-          </a>
+            Agendar Agora
+          </Link>
         </div>
       </div>
     </section>
