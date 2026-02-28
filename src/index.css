@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #1a1a2e;
+    background-color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { text-decoration: none; color: inherit; }
+  button { cursor: pointer; font-family: inherit; }
+}
