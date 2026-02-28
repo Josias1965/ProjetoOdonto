@@ -541,6 +541,148 @@ function BlogManageView({ posts, setPosts }) {
   )
 }
 
+const iconSettings = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+
+function Sidebar({ view, setView, navigate }) {
+  const items = [
+    { key: 'dashboard', label: 'Dashboard', icon: iconDash },
+    { key: 'especialistas', label: 'Especialistas', icon: iconUser },
+    { key: 'agendamentos', label: 'Agendamentos', icon: iconCalendar },
+    { key: 'blog', label: 'Postagens do Blog', icon: iconDoc },
+    { key: 'settings', label: 'Configurações', icon: iconSettings },
+  ]
+  return (
+    <aside className="w-72 min-h-screen bg-slate-900 flex flex-col flex-shrink-0">
+      <div className="px-7 py-7 border-b border-slate-700 flex items-center gap-4">
+        <div className="w-12 h-12 bg-teal-500 rounded-2xl flex-shrink-0" />
+        <div>
+          <p className="text-white font-bold text-lg leading-tight">Painel Admin</p>
+          <p className="text-slate-400 text-sm mt-0.5">Clínica Odontológica</p>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-4 py-5 space-y-1">
+        {items.map((item) => (
+          <button
+            key={item.key}
+            onClick={() => setView(item.key)}
+            className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-base font-semibold transition-colors text-left ${view === item.key
+              ? 'bg-teal-500 text-white'
+              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              }`}
+          >
+            {item.icon}
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="px-4 pb-6 border-t border-slate-700 pt-4 space-y-1">
+        <Link
+          to="/"
+          className="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-base font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+        >
+          {iconLink}
+          Ver Site
+        </Link>
+        <button
+          onClick={() => navigate('/admin')}
+          className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-base font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+        >
+          {iconExit}
+          Sair
+        </button>
+      </div>
+    </aside>
+  )
+}
+
+function SettingsView() {
+  const [form, setForm] = useState({ user: '', password: '', confirm: '' })
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState({ type: '', text: '' })
+
+  const save = async (e) => {
+    e.preventDefault()
+    if (!form.user || !form.password) {
+      setMsg({ type: 'error', text: 'Preencha usuário e senha.' })
+      return
+    }
+    if (form.password !== form.confirm) {
+      setMsg({ type: 'error', text: 'As senhas não coincidem.' })
+      return
+    }
+    setLoading(true)
+    try {
+      await db.updateAdmin({ user: form.user, password: form.password })
+      setMsg({ type: 'success', text: 'Credenciais atualizadas com sucesso!' })
+      setForm({ user: '', password: '', confirm: '' })
+    } catch (err) {
+      setMsg({ type: 'error', text: 'Erro ao atualizar credenciais.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="p-10 max-w-2xl">
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold text-gray-800">Configurações</h1>
+        <p className="text-gray-500 text-lg mt-1">Altere os dados de acesso administrativo</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <form onSubmit={save} className="space-y-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-2">Novo Usuário Admin</label>
+            <input
+              type="text"
+              value={form.user}
+              onChange={e => setForm({ ...form, user: e.target.value })}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              placeholder="Ex: josias_admin"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-2">Nova Senha</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              placeholder="••••••••"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-2">Confirmar Nova Senha</label>
+            <input
+              type="password"
+              value={form.confirm}
+              onChange={e => setForm({ ...form, confirm: e.target.value })}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {msg.text && (
+            <p className={`text-sm font-medium ${msg.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+              {msg.text}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-lg py-4 rounded-xl transition shadow-md disabled:opacity-50"
+          >
+            {loading ? 'Salvando...' : 'Atualizar Credenciais'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminDashboard({ initialView = 'dashboard' }) {
   const [view, setView] = useState(initialView)
   const [doctors, setDoctors] = useState([])
@@ -585,6 +727,7 @@ export default function AdminDashboard({ initialView = 'dashboard' }) {
         {currentViewKey === 'especialistas' && <EspecialistasView doctors={doctors} setDoctors={setDoctors} setView={setView} />}
         {currentViewKey === 'agendamentos' && <AgendamentosView appointments={appointments} setAppointments={setAppointments} filterDoctorId={view?.doctorId} doctors={doctors} />}
         {currentViewKey === 'blog' && <BlogManageView posts={posts} setPosts={setPosts} />}
+        {currentViewKey === 'settings' && <SettingsView />}
       </main>
     </div>
   )

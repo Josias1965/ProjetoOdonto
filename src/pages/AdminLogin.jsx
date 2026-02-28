@@ -1,17 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import * as db from '../lib/supabaseService'
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ user: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
+  const [storedCreds, setStoredCreds] = useState(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchCreds = async () => {
+      try {
+        const creds = await db.getAdmin()
+        if (creds) setStoredCreds(creds)
+      } catch (err) {
+        console.error('Erro ao buscar credenciais:', err)
+      }
+    }
+    fetchCreds()
+  }, [])
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const submit = (e) => {
     e.preventDefault()
-    if (form.user === 'admin' && form.password === 'admin123') {
+    const validUser = storedCreds?.user || 'admin'
+    const validPass = storedCreds?.password || 'admin123'
+
+    if (form.user === validUser && form.password === validPass) {
       navigate('/admin/dashboard')
     } else {
       setError('Usuário ou senha inválidos.')

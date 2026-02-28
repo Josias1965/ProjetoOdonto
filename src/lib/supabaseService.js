@@ -83,3 +83,15 @@ export const deletePost = async (id) => {
     const { error } = await supabase.from('posts').delete().eq('id', id)
     if (error) throw error
 }
+
+export const getAdmin = async () => {
+    const { data, error } = await supabase.from('settings').select('*').eq('key', 'admin_creds').single()
+    if (error && error.code !== 'PGRST116') throw error // PGRST116 is "no rows"
+    return data?.value
+}
+
+export const updateAdmin = async (creds) => {
+    const { data, error } = await supabase.from('settings').upsert({ key: 'admin_creds', value: creds }).select()
+    if (error) throw error
+    return data[0]
+}
