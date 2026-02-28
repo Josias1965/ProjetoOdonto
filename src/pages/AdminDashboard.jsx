@@ -30,58 +30,7 @@ const iconPlus = <svg className="w-5 h-5" fill="none" stroke="currentColor" stro
 const iconX = <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
 const iconCalendar = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
 
-function Sidebar({ view, setView, navigate }) {
-  const items = [
-    { key: 'dashboard', label: 'Dashboard', icon: iconDash },
-    { key: 'especialistas', label: 'Especialistas', icon: iconUser },
-    { key: 'agendamentos', label: 'Agendamentos', icon: iconCalendar },
-    { key: 'blog', label: 'Postagens do Blog', icon: iconDoc },
-  ]
-  return (
-    <aside className="w-72 min-h-screen bg-slate-900 flex flex-col flex-shrink-0">
-      <div className="px-7 py-7 border-b border-slate-700 flex items-center gap-4">
-        <div className="w-12 h-12 bg-teal-500 rounded-2xl flex-shrink-0" />
-        <div>
-          <p className="text-white font-bold text-lg leading-tight">Painel Admin</p>
-          <p className="text-slate-400 text-sm mt-0.5">Clínica Odontológica</p>
-        </div>
-      </div>
 
-      <nav className="flex-1 px-4 py-5 space-y-1">
-        {items.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => setView(item.key)}
-            className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-base font-semibold transition-colors text-left ${view === item.key
-              ? 'bg-teal-500 text-white'
-              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="px-4 pb-6 border-t border-slate-700 pt-4 space-y-1">
-        <Link
-          to="/"
-          className="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-base font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-        >
-          {iconLink}
-          Ver Site
-        </Link>
-        <button
-          onClick={() => navigate('/admin')}
-          className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-base font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-        >
-          {iconExit}
-          Sair
-        </button>
-      </div>
-    </aside>
-  )
-}
 
 function StatCard({ icon, count, label }) {
   return (
