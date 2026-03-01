@@ -4,7 +4,10 @@ import WhatsAppFloat from '../components/WhatsAppFloat'
 import * as db from '../lib/supabaseService'
 import { initialDoctors as fallbackDoctors } from '../data/doctors'
 
-const timeSlots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
+const timeSlots = [
+  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+]
 
 const perks = [
   'Agendamento rápido e fácil',
@@ -235,23 +238,27 @@ export default function Agendamento() {
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-600 mb-3">Horário Disponível</label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                         {timeSlots.map((t) => {
                           const isBooked = bookedTimes.includes(t)
+                          const isSelected = form.time === t
                           return (
                             <button
                               key={t}
                               type="button"
                               disabled={isBooked}
                               onClick={() => setForm({ ...form, time: t })}
-                              className={`py-3 rounded-xl text-base font-medium transition-colors ${form.time === t
-                                ? 'bg-teal-500 text-white shadow-sm'
-                                : isBooked
-                                  ? 'bg-gray-100 text-gray-300 cursor-not-allowed line-through'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-teal-50 hover:text-teal-600'
+                              className={`py-3 rounded-xl text-sm font-bold transition-all ${isBooked
+                                  ? 'bg-red-500 text-white opacity-90 cursor-not-allowed'
+                                  : isSelected
+                                    ? 'bg-teal-700 text-white ring-4 ring-teal-200 shadow-lg scale-105'
+                                    : 'bg-green-500 text-white hover:bg-green-600 shadow-sm'
                                 }`}
                             >
                               {t}
+                              {isBooked && <span className="block text-[8px] uppercase leading-none mt-0.5">Ocupado</span>}
+                              {!isBooked && !isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5">Livre</span>}
+                              {isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5">Sua Escolha</span>}
                             </button>
                           )
                         })}

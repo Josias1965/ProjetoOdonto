@@ -278,12 +278,13 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
       return
     }
 
-    // Verificar se o horário já está ocupado
+    // Verificar se o horário já está ocupado (ignorar se estiver cancelado)
     const isBusy = appointments.some(a =>
       String(a.doctorId) === String(form.doctorId) &&
       a.date === form.date &&
       a.time === form.time &&
-      a.id !== form.id
+      a.id !== form.id &&
+      a.status !== 'Cancelado'
     )
 
     if (isBusy) {
