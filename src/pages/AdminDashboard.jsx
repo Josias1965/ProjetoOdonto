@@ -199,6 +199,7 @@ function EspecialistasView({ doctors, setDoctors, setView }) {
       if (modal === 'add') setDoctors(prev => [...prev, saved])
       else setDoctors(prev => prev.map(d => d.id === form.id ? saved : d))
       setModal(null)
+      setForm({ name: '', specialty: '', cro: '', img: '', bio: '' })
     } catch (err) {
       alert('Erro ao salvar especialista')
     }
@@ -265,15 +266,39 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
   const defaultDoc = doctors.length > 0 ? doctors[0] : { id: '', name: '' }
   const [form, setForm] = useState({ patientName: '', patientPhone: '', date: '', time: '', status: 'Aguardando', doctorId: filterDoctorId || defaultDoc.id })
 
-  const openAdd = () => setModal('add')
+  const openAdd = () => {
+    setForm({ patientName: '', patientPhone: '', date: '', time: '', status: 'Aguardando', doctorId: filterDoctorId || defaultDoc.id })
+    setModal('add')
+  }
   const openEdit = (a) => { setForm({ ...a }); setModal('edit') }
 
   const save = async () => {
+    if (!form.patientName || !form.date || !form.time || !form.doctorId) {
+      alert('Preencha os campos obrigatórios (*)')
+      return
+    }
+
+    // Verificar se o horário já está ocupado
+    const isBusy = appointments.some(a =>
+      String(a.doctorId) === String(form.doctorId) &&
+      a.date === form.date &&
+      a.time === form.time &&
+      a.id !== form.id
+    )
+
+    if (isBusy) {
+      alert('Este horário já está ocupado para este especialista!')
+      return
+    }
+
     try {
-      const savedDocs = await db.saveAppointment(form)
+      const doc = doctors.find(d => String(d.id) === String(form.doctorId))
+      const payload = { ...form, doctorName: doc?.name || '' }
+      const savedDocs = await db.saveAppointment(payload)
       if (modal === 'add') setAppointments(p => [...p, savedDocs])
       else setAppointments(p => p.map(x => x.id === form.id ? savedDocs : x))
       setModal(null)
+      setForm({ patientName: '', patientPhone: '', date: '', time: '', status: 'Aguardando', doctorId: filterDoctorId || defaultDoc.id })
     } catch (e) { alert('Erro ao salvar') }
   }
 
@@ -335,7 +360,23 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
           </tbody>
         </table>
       </div>
-      {modal && <Modal title="Agendamento" fields={[{ key: 'patientName', label: 'Paciente*' }, { key: 'patientPhone', label: 'Telefone' }, { key: 'date', label: 'Data', type: 'date' }, { key: 'time', label: 'Hora*' }, { key: 'status', label: 'Status', select: ['Aguardando', 'Confirmado', 'Cancelado'] }]} data={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} onSave={save} onClose={() => setModal(null)} />}
+      {modal && (
+        <Modal
+          title="Agendamento"
+          fields={[
+            ...(!filterDoctorId ? [{ key: 'doctorId', label: 'Especialista*', select: doctors.map(d => ({ value: d.id, label: d.name })) }] : []),
+            { key: 'patientName', label: 'Paciente*' },
+            { key: 'patientPhone', label: 'Telefone' },
+            { key: 'date', label: 'Data', type: 'date' },
+            { key: 'time', label: 'Hora*' },
+            { key: 'status', label: 'Status', select: ['Aguardando', 'Confirmado', 'Cancelado'] }
+          ]}
+          data={form}
+          onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))}
+          onSave={save}
+          onClose={() => setModal(null)}
+        />
+      )}
     </div>
   )
 }
@@ -344,7 +385,10 @@ function BlogManageView({ posts, setPosts }) {
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState({ title: '', tag: 'Prevenção', date: '', img: '', excerpt: '', content: '' })
 
-  const openAdd = () => setModal('add')
+  const openAdd = () => {
+    setForm({ title: '', tag: 'Prevenção', date: '', img: '', excerpt: '', content: '' })
+    setModal('add')
+  }
   const openEdit = (p) => { setForm({ ...p }); setModal('edit') }
 
   const save = async () => {
@@ -352,6 +396,7 @@ function BlogManageView({ posts, setPosts }) {
       const saved = await db.savePost(form)
       setPosts(p => modal === 'add' ? [saved, ...p] : p.map(x => x.id === form.id ? saved : x))
       setModal(null)
+      setForm({ title: '', tag: 'Prevenção', date: '', img: '', excerpt: '', content: '' })
     } catch (e) { alert('Erro ao salvar') }
   }
 

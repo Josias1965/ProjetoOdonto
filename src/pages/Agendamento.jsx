@@ -57,6 +57,25 @@ export default function Agendamento() {
     fetchDoctors()
   }, [])
 
+  const [bookedTimes, setBookedTimes] = useState([])
+
+  useEffect(() => {
+    const fetchBooked = async () => {
+      if (form.doctorId && form.date) {
+        try {
+          const all = await db.getAppointments()
+          const taken = all
+            .filter(a => String(a.doctorId) === String(form.doctorId) && a.date === form.date && a.status !== 'Cancelado')
+            .map(a => a.time)
+          setBookedTimes(taken)
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+    fetchBooked()
+  }, [form.doctorId, form.date])
+
   const handle = (e) => {
     if (e.target.name === 'doctorId') {
       const selected = doctorsList.find(d => d.id === Number(e.target.value))
@@ -69,6 +88,18 @@ export default function Agendamento() {
   const submit = async (e) => {
     e.preventDefault()
     if (!form.time) { alert('Selecione um horário disponível.'); return }
+
+    // Check again before submitting
+    const all = await db.getAppointments()
+    const isTaken = all.some(a => String(a.doctorId) === String(form.doctorId) && a.date === form.date && a.time === form.time && a.status !== 'Cancelado')
+
+    if (isTaken) {
+      alert('Desculpe, este horário foi preenchido recentemente. Por favor, escolha outro.')
+      setBookedTimes(prev => [...prev, form.time])
+      setForm(f => ({ ...f, time: '' }))
+      return
+    }
+
     setIsSubmitting(true)
     try {
       await db.saveAppointment({
@@ -205,19 +236,25 @@ export default function Agendamento() {
                     <div>
                       <label className="block text-sm font-semibold text-gray-600 mb-3">Horário Disponível</label>
                       <div className="grid grid-cols-3 gap-3">
-                        {timeSlots.map((t) => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => setForm({ ...form, time: t })}
-                            className={`py-3 rounded-xl text-base font-medium transition-colors ${form.time === t
-                              ? 'bg-teal-500 text-white shadow-sm'
-                              : 'bg-gray-100 text-gray-600 hover:bg-teal-50 hover:text-teal-600'
-                              }`}
-                          >
-                            {t}
-                          </button>
-                        ))}
+                        {timeSlots.map((t) => {
+                          const isBooked = bookedTimes.includes(t)
+                          return (
+                            <button
+                              key={t}
+                              type="button"
+                              disabled={isBooked}
+                              onClick={() => setForm({ ...form, time: t })}
+                              className={`py-3 rounded-xl text-base font-medium transition-colors ${form.time === t
+                                ? 'bg-teal-500 text-white shadow-sm'
+                                : isBooked
+                                  ? 'bg-gray-100 text-gray-300 cursor-not-allowed line-through'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-teal-50 hover:text-teal-600'
+                                }`}
+                            >
+                              {t}
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
 
