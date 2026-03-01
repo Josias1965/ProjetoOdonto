@@ -248,17 +248,17 @@ export default function Agendamento() {
                               type="button"
                               disabled={isBooked}
                               onClick={() => setForm({ ...form, time: t })}
-                              className={`py-3 rounded-xl text-sm font-bold transition-all ${isBooked
-                                  ? 'bg-red-500 text-white opacity-90 cursor-not-allowed'
+                              className={`py-3 rounded-xl text-sm font-bold transition-all border ${isBooked
+                                  ? 'bg-red-500 text-white border-red-500 opacity-90 cursor-not-allowed'
                                   : isSelected
-                                    ? 'bg-teal-700 text-white ring-4 ring-teal-200 shadow-lg scale-105'
-                                    : 'bg-green-500 text-white hover:bg-green-600 shadow-sm'
+                                    ? 'bg-teal-600 text-white border-teal-600 ring-4 ring-teal-100 shadow-md scale-105'
+                                    : 'bg-white text-gray-700 border-gray-200 hover:border-teal-400 hover:bg-teal-50 shadow-sm'
                                 }`}
                             >
                               {t}
                               {isBooked && <span className="block text-[8px] uppercase leading-none mt-0.5">Ocupado</span>}
-                              {!isBooked && !isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5">Livre</span>}
-                              {isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5">Sua Escolha</span>}
+                              {!isBooked && !isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5 text-gray-400">Livre</span>}
+                              {isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5 text-teal-100">Sua Escolha</span>}
                             </button>
                           )
                         })}
