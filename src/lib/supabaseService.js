@@ -7,19 +7,22 @@ export const getDoctors = async () => {
 }
 
 export const saveDoctor = async (doctor) => {
-    const { id, ...rest } = doctor
-    if (id && typeof id === 'number' && id > 1000) { // New item check logic
-        const { data, error } = await supabase.from('doctors').insert([rest]).select()
-        if (error) throw error
-        return data[0]
-    } else if (id) {
-        const { data, error } = await supabase.from('doctors').update(rest).eq('id', id).select()
-        if (error) throw error
-        return data[0]
-    } else {
-        const { data, error } = await supabase.from('doctors').insert([rest]).select()
-        if (error) throw error
-        return data[0]
+    try {
+        const { id, ...rest } = doctor
+        // Se temos um ID numérico real (não um timestamp de Date.now()), fazemos update
+        if (id && typeof id === 'number' && id < 1000000000000) {
+            const { data, error } = await supabase.from('doctors').update(rest).eq('id', id).select()
+            if (error) throw error
+            return data[0]
+        } else {
+            // Se id é undefined ou um timestamp alto, é uma nova inserção
+            const { data, error } = await supabase.from('doctors').insert([rest]).select()
+            if (error) throw error
+            return data[0]
+        }
+    } catch (error) {
+        console.error('Erro em saveDoctor:', error)
+        throw error
     }
 }
 
@@ -63,19 +66,15 @@ export const getPosts = async () => {
 }
 
 export const savePost = async (post) => {
-    const { id, ...rest } = post
-    if (id && id > 1000000000) {
-        const { data, error } = await supabase.from('posts').insert([rest]).select()
+    try {
+        // Como o ID do post é um Texto (slug) fornecido pelo usuário, 
+        // usamos upsert para inserir se não existir ou atualizar se existir.
+        const { data, error } = await supabase.from('posts').upsert(post).select()
         if (error) throw error
         return data[0]
-    } else if (id) {
-        const { data, error } = await supabase.from('posts').update(rest).eq('id', id).select()
-        if (error) throw error
-        return data[0]
-    } else {
-        const { data, error } = await supabase.from('posts').insert([rest]).select()
-        if (error) throw error
-        return data[0]
+    } catch (error) {
+        console.error('Erro em savePost:', error)
+        throw error
     }
 }
 
