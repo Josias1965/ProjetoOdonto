@@ -20,7 +20,6 @@ export default function Agendamento() {
     doctorId: '',
     doctorName: '',
     name: '',
-    email: '',
     phone: '',
     date: '',
     time: '',
@@ -76,7 +75,6 @@ export default function Agendamento() {
         doctorId: form.doctorId,
         doctorName: form.doctorName,
         patientName: form.name,
-        patientEmail: form.email,
         patientPhone: form.phone,
         date: form.date,
         time: form.time,
@@ -133,9 +131,9 @@ export default function Agendamento() {
                   <p className="text-gray-500 mb-6">
                     {new Date(form.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} às {form.time}
                   </p>
-                  <p className="text-gray-400 text-sm mb-8">Uma confirmação será enviada para <strong>{form.email}</strong></p>
+                  <p className="text-gray-400 text-sm mb-8">Entraremos em contato em breve para confirmar.</p>
                   <button
-                    onClick={() => { setSubmitted(false); setForm({ doctorId: doctorsList[0]?.id, doctorName: doctorsList[0]?.name, name: '', email: '', phone: '', date: '', time: '' }) }}
+                    onClick={() => { setSubmitted(false); setForm({ doctorId: doctorsList[0]?.id, doctorName: doctorsList[0]?.name, name: '', phone: '', date: '', time: '' }) }}
                     className="border-2 border-teal-500 text-teal-600 font-semibold px-8 py-3 rounded-full hover:bg-teal-500 hover:text-white transition-colors"
                   >
                     Novo Agendamento
@@ -177,17 +175,7 @@ export default function Agendamento() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-2">Email</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={form.email}
-                        onChange={handle}
-                        required
-                        className="w-full border border-gray-400 bg-gray-50 rounded-xl px-4 py-3.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 text-base"
-                      />
-                    </div>
+
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-600 mb-2">Telefone</label>
