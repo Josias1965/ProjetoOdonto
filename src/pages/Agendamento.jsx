@@ -75,7 +75,7 @@ export default function Agendamento() {
         doctorId: form.doctorId,
         doctorName: form.doctorName,
         patientName: form.name,
-        patientPhone: form.phone,
+        phone: form.phone,
         date: form.date,
         time: form.time,
         status: 'Aguardando'

@@ -200,7 +200,7 @@ function EspecialistasView({ doctors, setDoctors, setView }) {
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Profissional</th>
                 <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Especialidade</th>
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500 text-center">CRO</th>
+                <th className="hidden md:table-cell text-left px-7 py-4 text-base font-bold text-gray-500 text-center">CRO</th>
                 <th className="px-7 py-4" />
               </tr>
             </thead>
@@ -218,12 +218,12 @@ function EspecialistasView({ doctors, setDoctors, setView }) {
                     </div>
                   </td>
                   <td className="px-7 py-5 text-base text-gray-500">{d.specialty}</td>
-                  <td className="px-7 py-5 text-base text-gray-500 text-center">{d.cro}</td>
+                  <td className="hidden md:table-cell px-7 py-5 text-base text-gray-500 text-center">{d.cro}</td>
                   <td className="px-7 py-5">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button onClick={() => setView({ name: 'agendamentos', doctorId: d.id })} className="text-sm font-bold text-gray-500 hover:text-teal-500 px-3 py-2 transition">Agendar</button>
-                      <button onClick={() => openEdit(d)} className="text-sm font-bold text-teal-500 hover:text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
-                      <button onClick={() => remove(d.id)} className="text-sm font-bold text-red-400 hover:text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
+                    <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => setView({ name: 'agendamentos', doctorId: d.id })} className="text-xs sm:text-sm font-bold text-gray-500 hover:text-teal-500 px-2 py-2 transition whitespace-nowrap">Agendar</button>
+                      <button onClick={() => openEdit(d)} className="text-xs sm:text-sm font-bold text-teal-500 hover:text-teal-700 px-2 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
+                      <button onClick={() => remove(d.id)} className="text-xs sm:text-sm font-bold text-red-400 hover:text-red-600 px-2 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
                     </div>
                   </td>
                 </tr>
@@ -313,8 +313,8 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Paciente</th>
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Especialista</th>
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Data/Hora</th>
+                <th className="hidden sm:table-cell text-left px-7 py-4 text-base font-bold text-gray-500">Especialista</th>
+                <th className="hidden md:table-cell text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Data/Hora</th>
                 <th className="text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Status</th>
                 <th className="px-7 py-4" />
               </tr>
@@ -325,13 +325,15 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
                   <td className="px-7 py-5">
                     <p className="font-bold text-gray-800 text-base">{a.patientName}</p>
                     <p className="text-sm text-gray-400">{a.phone}</p>
+                    <p className="text-xs text-teal-600 sm:hidden mt-0.5">{a.doctorName}</p>
+                    <p className="text-xs text-gray-400 md:hidden mt-1">{new Date(a.date).toLocaleDateString('pt-BR')} às {a.time}</p>
                   </td>
-                  <td className="px-7 py-5 text-base text-gray-600 font-medium">{a.doctorName}</td>
-                  <td className="px-7 py-5 text-base text-gray-500 text-center">
+                  <td className="hidden sm:table-cell px-7 py-5 text-base text-gray-600 font-medium">{a.doctorName}</td>
+                  <td className="hidden md:table-cell px-7 py-5 text-base text-gray-500 text-center">
                     {new Date(a.date).toLocaleDateString('pt-BR')} às {a.time}
                   </td>
                   <td className="px-7 py-5 text-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${a.status === 'Confirmado' ? 'bg-green-50 text-green-600' :
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${a.status === 'Confirmado' ? 'bg-green-50 text-green-600' :
                       a.status === 'Cancelado' ? 'bg-red-50 text-red-600' :
                         'bg-yellow-50 text-yellow-600'
                       }`}>
@@ -339,9 +341,9 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
                     </span>
                   </td>
                   <td className="px-7 py-5">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button onClick={() => openEdit(a)} className="text-sm font-bold text-teal-500 hover:text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
-                      <button onClick={() => remove(a.id)} className="text-sm font-bold text-red-400 hover:text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
+                    <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => openEdit(a)} className="text-xs sm:text-sm font-bold text-teal-500 hover:text-teal-700 px-2 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
+                      <button onClick={() => remove(a.id)} className="text-xs sm:text-sm font-bold text-red-400 hover:text-red-600 px-2 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
                     </div>
                   </td>
                 </tr>
@@ -436,8 +438,8 @@ function BlogManageView({ posts, setPosts }) {
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Postagem</th>
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Categoria</th>
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Data</th>
+                <th className="hidden sm:table-cell text-left px-7 py-4 text-base font-bold text-gray-500">Categoria</th>
+                <th className="hidden md:table-cell text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Data</th>
                 <th className="px-7 py-4" />
               </tr>
             </thead>
@@ -451,17 +453,23 @@ function BlogManageView({ posts, setPosts }) {
                         className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                         onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=Post&background=0d9488&color=fff' }}
                       />
-                      <span className="font-bold text-gray-800 text-base line-clamp-1">{p.title}</span>
+                      <div>
+                        <span className="font-bold text-gray-800 text-base line-clamp-1">{p.title}</span>
+                        <div className="flex items-center gap-2 sm:hidden mt-0.5">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tagColors[p.tag] || 'bg-gray-100 text-gray-600'}`}>{p.tag}</span>
+                          <span className="text-[10px] text-gray-400">{p.date}</span>
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-7 py-5">
+                  <td className="hidden sm:table-cell px-7 py-5">
                     <span className={`text-xs font-bold px-3 py-1 rounded-full ${tagColors[p.tag] || 'bg-gray-100 text-gray-600'}`}>{p.tag}</span>
                   </td>
-                  <td className="px-7 py-5 text-base text-gray-500 text-center">{p.date}</td>
+                  <td className="hidden md:table-cell px-7 py-5 text-base text-gray-500 text-center">{p.date}</td>
                   <td className="px-7 py-5">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button onClick={() => openEdit(p)} className="text-sm font-bold text-teal-500 hover:text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
-                      <button onClick={() => remove(p.id)} className="text-sm font-bold text-red-400 hover:text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
+                    <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => openEdit(p)} className="text-xs sm:text-sm font-bold text-teal-500 hover:text-teal-700 px-2 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
+                      <button onClick={() => remove(p.id)} className="text-xs sm:text-sm font-bold text-red-400 hover:text-red-600 px-2 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
                     </div>
                   </td>
                 </tr>
