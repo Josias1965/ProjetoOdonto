@@ -9,7 +9,7 @@ const timeSlots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
 const perks = [
   'Agendamento rápido e fácil',
   'Escolha seu dentista preferido',
-  'Confirmação imediata por email',
+  'Confirmação direta via WhatsApp',
   'Lembretes automáticos',
 ]
 
@@ -82,7 +82,8 @@ export default function Agendamento() {
       })
       setSubmitted(true)
     } catch (err) {
-      alert('Erro ao realizar agendamento. Tente novamente.')
+      console.error('Erro de agendamento:', err)
+      alert(`Erro no agendamento: ${err.message || 'Verifique se todos os campos estão corretos e tente novamente.'}`)
     } finally {
       setIsSubmitting(false)
     }
