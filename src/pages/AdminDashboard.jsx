@@ -33,10 +33,9 @@ const FIX_DRIVE_URL = (url) => {
   return url;
 };
 
-// Componente de menu para ações (lista suspensa estilo nativo para mobile)
 function ActionSelect({ onEdit, onRemove, onSchedule }) {
   return (
-    <div className="relative inline-block w-full sm:w-[140px]">
+    <div className="relative inline-block w-[100px] sm:w-[110px]">
       <select
         onChange={(e) => {
           const val = e.target.value
@@ -45,16 +44,16 @@ function ActionSelect({ onEdit, onRemove, onSchedule }) {
           if (val === 'schedule' && onSchedule) onSchedule()
           e.target.value = ''
         }}
-        className="w-full bg-white border-2 border-teal-500 text-teal-600 font-bold py-1.5 px-4 pr-10 rounded-xl focus:outline-none appearance-none text-xs transition-all shadow-sm cursor-pointer"
+        className="w-full bg-white border border-teal-500 text-teal-600 font-bold py-1 px-2 pr-6 rounded-lg focus:outline-none appearance-none text-[10px] transition-all shadow-sm cursor-pointer"
         defaultValue=""
       >
-        <option value="" disabled>Ações...</option>
+        <option value="" disabled>Ações</option>
         {onSchedule && <option value="schedule">Agendar</option>}
         <option value="edit">Editar</option>
         <option value="remove">Remover</option>
       </select>
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-teal-500">
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-teal-500">
+        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
       </div>
     </div>
   )
@@ -298,29 +297,37 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
-        <table className="w-full min-w-[500px]">
+        <table className="w-full min-w-[420px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-6 py-4 text-left font-bold text-gray-500 text-xs uppercase">Paciente</th>
-              <th className="px-6 py-4 text-center font-bold text-gray-500 text-xs uppercase">Data/Hora</th>
-              <th className="px-6 py-4 text-center font-bold text-gray-500 text-xs uppercase">Status</th>
-              <th className="px-6 py-4 text-right font-bold text-gray-500 text-xs uppercase w-[150px]">Ações</th>
+              <th className="px-3 py-4 text-left font-bold text-gray-500 text-xs uppercase text-[10px]">Paciente</th>
+              <th className="px-3 py-4 text-center font-bold text-gray-500 text-xs uppercase text-[10px]">Data/Hora</th>
+              <th className="px-2 py-4 text-center font-bold text-gray-500 text-xs uppercase text-[10px]">Status</th>
+              <th className="px-3 py-4 text-right font-bold text-gray-500 text-xs uppercase text-[10px] w-[130px]">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filtered.map(a => (
               <tr key={a.id} className="hover:bg-gray-50 transition">
-                <td className="px-6 py-4">
-                  <p className="font-bold">{a.patientName}</p>
-                  <p className="text-xs text-gray-400">{a.doctorName || getDocName(a.doctorId)}</p>
+                <td className="px-3 py-4">
+                  <p className="font-bold text-sm leading-tight mb-1">{a.patientName}</p>
+                  <p className="text-[10px] text-gray-400 line-clamp-1">{a.doctorName || getDocName(a.doctorId)}</p>
                 </td>
-                <td className="px-6 py-4 text-center text-sm">
+                <td className="px-3 py-4 text-center text-[11px] leading-snug">
                   {a.date} <br /> <span className="font-bold">{a.time}</span>
                 </td>
-                <td className="px-6 py-4 text-center">
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${a.status === 'Confirmado' ? 'bg-green-50 text-green-600' : a.status === 'Cancelado' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'}`}>{a.status}</span>
+                <td className="px-2 py-4">
+                  <div className="flex justify-center">
+                    <div
+                      title={a.status}
+                      className={`w-3.5 h-3.5 rounded-full shadow-sm ${a.status === 'Confirmado' ? 'bg-green-500' :
+                        a.status === 'Cancelado' ? 'bg-red-500' :
+                          'bg-yellow-400'
+                        }`}
+                    />
+                  </div>
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-3 py-4 text-right">
                   <ActionSelect onEdit={() => openEdit(a)} onRemove={() => remove(a.id)} />
                 </td>
               </tr>
