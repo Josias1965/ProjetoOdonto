@@ -16,6 +16,17 @@ const iconCalendar = <svg className="w-6 h-6" fill="none" stroke="currentColor" 
 const iconDots = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
 const iconChevronDown = <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
 
+const FIX_DRIVE_URL = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  if (url.includes('drive.google.com')) {
+    const dMatch = url.match(/\/d\/([^/#?&]+)/);
+    if (dMatch) return `https://drive.google.com/uc?id=${dMatch[1]}`;
+    const idMatch = url.match(/[?&]id=([^&#]+)/);
+    if (idMatch) return `https://drive.google.com/uc?id=${idMatch[1]}`;
+  }
+  return url;
+};
+
 function ActionMenu({ onEdit, onRemove, onSchedule }) {
   const [open, setOpen] = useState(false)
   return (
@@ -170,6 +181,12 @@ function Modal({ title, fields, data, onChange, onSave, onClose }) {
                   className="w-full border border-gray-300 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
                 />
               )}
+              {f.key === 'img' && data[f.key] && (
+                <div className="mt-3 flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 animate-in fade-in slide-in-from-top-1">
+                  <img src={data[f.key]} alt="Preview" className="w-16 h-16 rounded-lg object-cover shadow-sm bg-white" onError={(e) => e.target.style.display = 'none'} />
+                  <span className="text-xs text-gray-500 font-medium italic">Pré-visualização da imagem</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -189,7 +206,7 @@ function EspecialistasView({ doctors, setDoctors, setView }) {
 
   const openAdd = () => { setForm(empty); setModal('add') }
   const openEdit = (d) => { setForm({ ...d }); setModal('edit') }
-  const handleChange = (k, v) => setForm((f) => ({ ...f, [k]: v }))
+  const handleChange = (k, v) => setForm((f) => ({ ...f, [k]: k === 'img' ? FIX_DRIVE_URL(v) : v }))
 
   const save = async () => {
     try {
@@ -434,7 +451,7 @@ function BlogManageView({ posts, setPosts }) {
 
   const openAdd = () => { setForm(empty); setModal('add') }
   const openEdit = (p) => { setForm({ ...p }); setModal('edit') }
-  const handleChange = (k, v) => setForm((f) => ({ ...f, [k]: v }))
+  const handleChange = (k, v) => setForm((f) => ({ ...f, [k]: k === 'img' ? FIX_DRIVE_URL(v) : v }))
 
   const save = async () => {
     try {
