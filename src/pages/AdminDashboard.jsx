@@ -12,7 +12,7 @@ const iconExit = <svg className="w-6 h-6" fill="none" stroke="currentColor" stro
 const iconLink = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
 const iconPlus = <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
 const iconX = <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-const iconCalendar = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+const iconCalendar = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002-2z" /></svg>
 const iconDots = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
 const iconChevronDown = <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
 
@@ -20,62 +20,47 @@ const FIX_DRIVE_URL = (url) => {
   if (!url || typeof url !== 'string') return url;
   if (url.includes('drive.google.com')) {
     let fileId = '';
-    // Formato: .../file/d/FILE_ID/...
     const dMatch = url.match(/\/file\/d\/([^/#?&]+)/) || url.match(/\/d\/([^/#?&]+)/);
     if (dMatch) fileId = dMatch[1];
-
-    // Formato: ...?id=FILE_ID
     if (!fileId) {
       const idMatch = url.match(/[?&]id=([^&#]+)/);
       if (idMatch) fileId = idMatch[1];
     }
-
     if (fileId) {
-      // Usando thumbnailer do Google Drive que é mais confiável para renderizar no navegador
-      // lh3.googleusercontent.com ou drive.google.com/thumbnail?id=
       return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
     }
   }
   return url;
 };
 
-function ActionMenu({ onEdit, onRemove, onSchedule }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="relative inline-block text-left">
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
-        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:border-teal-400 text-gray-700 transition-all shadow-sm hover:shadow-md active:scale-95"
-      >
-        <span className="text-sm font-bold">Ações</span>
-        <span className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
-          {iconChevronDown}
-        </span>
-      </button>
+// Componente para o menu de ações nativo (similar ao anexo do usuário)
+function ActionSelect({ onEdit, onRemove, onSchedule }) {
+  const handleSelect = (e) => {
+    const val = e.target.value
+    if (val === 'edit') onEdit()
+    if (val === 'remove') onRemove()
+    if (val === 'schedule' && onSchedule) onSchedule()
+    e.target.value = ''
+  }
 
-      {open && (
-        <>
-          <div className="fixed inset-0 z-[80]" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[90] py-2 animate-in fade-in zoom-in duration-200 origin-top-right overflow-hidden">
-            {onSchedule && (
-              <button onClick={() => { onSchedule(); setOpen(false) }} className="w-full text-left px-5 py-3 text-sm font-bold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-3 border-b border-gray-50">
-                <span className="w-2 h-2 rounded-full bg-blue-400" /> Agendar
-              </button>
-            )}
-            <button onClick={() => { onEdit(); setOpen(false) }} className="w-full text-left px-5 py-3 text-sm font-bold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-3 border-b border-gray-50">
-              <span className="w-2 h-2 rounded-full bg-teal-400" /> Editar
-            </button>
-            <button onClick={() => { onRemove(); setOpen(false) }} className="w-full text-left px-5 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-red-400" /> Remover
-            </button>
-          </div>
-        </>
-      )}
+  return (
+    <div className="relative">
+      <select
+        onChange={handleSelect}
+        className="w-full bg-white border-2 border-teal-500 text-teal-600 font-bold py-1.5 px-4 pr-10 rounded-xl focus:outline-none appearance-none text-xs transition-all shadow-sm active:scale-95"
+        defaultValue=""
+      >
+        <option value="" disabled>Ações...</option>
+        {onSchedule && <option value="schedule">Agendar</option>}
+        <option value="edit">Editar</option>
+        <option value="remove">Remover</option>
+      </select>
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-teal-500">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+      </div>
     </div>
   )
 }
-const iconSettings = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 
 function StatCard({ icon, count, label }) {
   return (
@@ -251,65 +236,47 @@ function EspecialistasView({ doctors, setDoctors, setView }) {
   ]
 
   return (
-    <div className="p-6 lg:p-10">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-800">Especialistas</h1>
-          <p className="text-gray-500 text-lg mt-1">Gerencie os profissionais da clínica</p>
-        </div>
-        <button onClick={openAdd} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold text-base px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+    <div className="p-4 sm:p-6 lg:p-10 text-gray-800">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold">Especialistas</h1>
+        <button onClick={openAdd} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 px-6 py-3 rounded-xl text-white font-bold flex items-center justify-center gap-2 transition shadow-md">
           {iconPlus} Novo Especialista
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Profissional</th>
-                <th className="hidden sm:table-cell text-left px-7 py-4 text-base font-bold text-gray-500">Especialidade</th>
-                <th className="hidden md:table-cell text-left px-7 py-4 text-base font-bold text-gray-500 text-center">CRO</th>
-                <th className="px-7 py-4 text-right text-base font-bold text-gray-500">Ações</th>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[300px] border-collapse">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              <th className="px-6 py-4 text-left font-bold text-gray-500 text-sm">Profissional</th>
+              <th className="hidden sm:table-cell px-6 py-4 text-left font-bold text-gray-500 text-sm">Especialidade</th>
+              <th className="px-6 py-4 text-right font-bold text-gray-500 text-sm w-[150px]">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {doctors.map(d => (
+              <tr key={d.id} className="hover:bg-gray-50 transition">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-4">
+                    <img src={d.img} className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover shadow-sm" alt={d.name} onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + d.name} />
+                    <div>
+                      <p className="font-bold text-gray-800 text-sm sm:text-base leading-tight">{d.name}</p>
+                      <p className="sm:hidden text-xs text-gray-400 mt-0.5">{d.specialty}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="hidden sm:table-cell px-6 py-4 text-gray-600 text-sm">{d.specialty}</td>
+                <td className="px-6 py-4">
+                  <ActionSelect
+                    onSchedule={() => setView({ name: 'agendamentos', doctorId: d.id })}
+                    onEdit={() => openEdit(d)}
+                    onRemove={() => remove(d.id)}
+                  />
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {doctors.map((d) => (
-                <tr key={d.id} className="hover:bg-gray-50 transition">
-                  <td className="px-7 py-5">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={d.img} alt={d.name}
-                        className="w-14 h-14 rounded-full object-cover flex-shrink-0"
-                        onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + d.name + '&background=0d9488&color=fff' }}
-                      />
-                      <div>
-                        <span className="font-bold text-gray-800 text-base">{d.name}</span>
-                        <p className="text-sm text-gray-400 sm:hidden">{d.specialty}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="hidden sm:table-cell px-7 py-5 text-base text-gray-500">{d.specialty}</td>
-                  <td className="hidden md:table-cell px-7 py-5 text-base text-gray-500 text-center">{d.cro}</td>
-                  <td className="px-7 py-5 text-right">
-                    <div className="hidden sm:flex items-center gap-1 justify-end">
-                      <button onClick={() => setView({ name: 'agendamentos', doctorId: d.id })} className="text-xs sm:text-sm font-bold text-gray-500 hover:text-teal-500 px-2 py-2 transition whitespace-nowrap">Agendar</button>
-                      <button onClick={() => openEdit(d)} className="text-xs sm:text-sm font-bold text-teal-500 hover:text-teal-700 px-2 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
-                      <button onClick={() => remove(d.id)} className="text-xs sm:text-sm font-bold text-red-400 hover:text-red-600 px-2 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
-                    </div>
-                    <div className="sm:hidden">
-                      <ActionMenu
-                        onSchedule={() => setView({ name: 'agendamentos', doctorId: d.id })}
-                        onEdit={() => openEdit(d)}
-                        onRemove={() => remove(d.id)}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
       {modal && <Modal title={modal === 'add' ? 'Novo Especialista' : 'Editar Especialista'} fields={fields} data={form} onChange={handleChange} onSave={save} onClose={() => setModal(null)} />}
     </div>
@@ -374,84 +341,53 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
   ]
 
   return (
-    <div className="p-6 lg:p-10">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-gray-800">
             {filterDoctorId ? `Agendamentos: ${getDoctorName(filterDoctorId)}` : 'Todos os Agendamentos'}
           </h1>
-          <p className="text-gray-500 text-lg mt-1">Lista de consultas marcadas</p>
         </div>
-        <button onClick={openAdd} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold text-base px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+        <button onClick={openAdd} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold px-6 py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
           {iconPlus} Novo Agendamento
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Paciente</th>
-                <th className="hidden sm:table-cell text-left px-7 py-4 text-base font-bold text-gray-500">Especialista</th>
-                <th className="hidden md:table-cell text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Data/Hora</th>
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Status</th>
-                <th className="px-7 py-4" />
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[500px]">
+          <tr className="bg-gray-50 border-b border-gray-100 uppercase tracking-wider text-[10px] font-black text-gray-400">
+            <th className="px-6 py-4 text-left">Paciente</th>
+            <th className="hidden sm:table-cell px-6 py-4 text-left">Especialista</th>
+            <th className="hidden md:table-cell px-6 py-4 text-center">Data/Hora</th>
+            <th className="px-6 py-4 text-center text-sm">Status</th>
+            <th className="px-6 py-4" />
+          </tr>
+          <tbody className="divide-y divide-gray-100">
+            {filtered.map(a => (
+              <tr key={a.id} className="hover:bg-gray-50 transition">
+                <td className="px-6 py-4">
+                  <p className="font-bold text-gray-800 text-sm leading-tight">{a.patientName}</p>
+                  <p className="text-[10px] text-gray-400 font-medium">{a.patientPhone}</p>
+                </td>
+                <td className="hidden sm:table-cell px-6 py-4 text-gray-600 text-sm">{a.doctorName}</td>
+                <td className="hidden md:table-cell px-6 py-4 text-center text-gray-500 text-sm">
+                  {new Date(a.date).toLocaleDateString('pt-BR')} <br />
+                  <span className="font-bold">{a.time}</span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${a.status === 'Confirmado' ? 'bg-green-50 text-green-600' : a.status === 'Cancelado' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'}`}>
+                    {a.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <ActionSelect onEdit={() => openEdit(a)} onRemove={() => remove(a.id)} />
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.map((a) => (
-                <tr key={a.id} className="hover:bg-gray-50 transition">
-                  <td className="px-7 py-5">
-                    <p className="font-bold text-gray-800 text-base">{a.patientName}</p>
-                    <p className="text-sm text-gray-400">{a.patientPhone}</p>
-                    <p className="text-xs text-teal-600 sm:hidden mt-0.5">{a.doctorName}</p>
-                    <p className="text-xs text-gray-400 md:hidden mt-1">{new Date(a.date).toLocaleDateString('pt-BR')} às {a.time}</p>
-                  </td>
-                  <td className="hidden sm:table-cell px-7 py-5 text-base text-gray-600 font-medium">{a.doctorName}</td>
-                  <td className="hidden md:table-cell px-7 py-5 text-base text-gray-500 text-center">
-                    {new Date(a.date).toLocaleDateString('pt-BR')} às {a.time}
-                  </td>
-                  <td className="px-7 py-5 text-center">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${a.status === 'Confirmado' ? 'bg-green-50 text-green-600' :
-                      a.status === 'Cancelado' ? 'bg-red-50 text-red-600' :
-                        'bg-yellow-50 text-yellow-600'
-                      }`}>
-                      {a.status}
-                    </span>
-                  </td>
-                  <td className="px-7 py-5 text-right">
-                    <div className="hidden sm:flex items-center gap-1 justify-end">
-                      <button onClick={() => openEdit(a)} className="text-xs sm:text-sm font-bold text-teal-500 hover:text-teal-700 px-2 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
-                      <button onClick={() => remove(a.id)} className="text-xs sm:text-sm font-bold text-red-400 hover:text-red-600 px-2 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
-                    </div>
-                    <div className="sm:hidden">
-                      <ActionMenu onEdit={() => openEdit(a)} onRemove={() => remove(a.id)} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="px-7 py-12 text-center text-gray-400 text-lg italic bg-gray-50/30">
-                    Nenhum agendamento encontrado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
-      {modal && (
-        <Modal
-          title={modal === 'add' ? 'Novo Agendamento' : 'Editar Agendamento'}
-          fields={finalFields}
-          data={form}
-          onChange={handleChange}
-          onSave={save}
-          onClose={() => setModal(null)}
-        />
-      )}
+      {modal && <Modal title={modal === 'add' ? 'Novo Agendamento' : 'Editar Agendamento'} fields={finalFields} data={form} onChange={handleChange} onSave={save} onClose={() => setModal(null)} />}
     </div>
   )
 }
@@ -508,65 +444,43 @@ function BlogManageView({ posts, setPosts }) {
   ]
 
   return (
-    <div className="p-6 lg:p-10">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-800">Blog</h1>
-          <p className="text-gray-500 text-lg mt-1">Gerencie os artigos publicados</p>
-        </div>
-        <button onClick={openAdd} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold text-base px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold">Blog</h1>
+        <button onClick={openAdd} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition shadow-md">
           {iconPlus} Nova Postagem
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-7 py-4 text-base font-bold text-gray-500">Postagem</th>
-                <th className="hidden sm:table-cell text-left px-7 py-4 text-base font-bold text-gray-500">Categoria</th>
-                <th className="hidden md:table-cell text-left px-7 py-4 text-base font-bold text-gray-500 text-center">Data</th>
-                <th className="px-7 py-4 text-right text-base font-bold text-gray-500">Ações</th>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[300px]">
+          <tr className="bg-gray-50 border-b border-gray-100 uppercase tracking-wider text-[10px] font-black text-gray-400">
+            <th className="px-6 py-4 text-left">Artigo</th>
+            <th className="hidden sm:table-cell px-6 py-4 text-left">Categoria</th>
+            <th className="px-6 py-4 text-right w-[150px]">Ações</th>
+          </tr>
+          <tbody className="divide-y divide-gray-100">
+            {posts.map(p => (
+              <tr key={p.id} className="hover:bg-gray-50 transition">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-4">
+                    <img src={p.img} className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover shadow-sm" alt={p.title} onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=Post'} />
+                    <div>
+                      <p className="font-bold text-gray-800 text-sm leading-tight line-clamp-1">{p.title}</p>
+                      <p className="sm:hidden text-[10px] text-teal-600 font-bold mt-1">{p.tag}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="hidden sm:table-cell px-6 py-4">
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${tagColors[p.tag] || 'bg-gray-50'}`}>{p.tag}</span>
+                </td>
+                <td className="px-6 py-4">
+                  <ActionSelect onEdit={() => openEdit(p)} onRemove={() => remove(p.id)} />
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {posts.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 transition">
-                  <td className="px-7 py-5">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={p.img} alt={p.title}
-                        className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
-                        onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=Post&background=0d9488&color=fff' }}
-                      />
-                      <div>
-                        <span className="font-bold text-gray-800 text-base line-clamp-1">{p.title}</span>
-                        <div className="flex items-center gap-2 sm:hidden mt-0.5">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tagColors[p.tag] || 'bg-gray-100 text-gray-600'}`}>{p.tag}</span>
-                          <span className="text-[10px] text-gray-400">{p.date}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="hidden sm:table-cell px-7 py-5">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${tagColors[p.tag] || 'bg-gray-100 text-gray-600'}`}>{p.tag}</span>
-                  </td>
-                  <td className="hidden md:table-cell px-7 py-5 text-base text-gray-500 text-center">{p.date}</td>
-                  <td className="px-7 py-5 text-right">
-                    <div className="hidden sm:flex items-center gap-1 justify-end">
-                      <button onClick={() => openEdit(p)} className="text-xs sm:text-sm font-bold text-teal-500 hover:text-teal-700 px-2 py-2 rounded-lg hover:bg-teal-50 transition">Editar</button>
-                      <button onClick={() => remove(p.id)} className="text-xs sm:text-sm font-bold text-red-400 hover:text-red-600 px-2 py-2 rounded-lg hover:bg-red-50 transition">Remover</button>
-                    </div>
-                    <div className="sm:hidden">
-                      <ActionMenu onEdit={() => openEdit(p)} onRemove={() => remove(p.id)} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
       {modal && <Modal title={modal === 'add' ? 'Nova Postagem' : 'Editar Postagem'} fields={fields} data={form} onChange={handleChange} onSave={save} onClose={() => setModal(null)} />}
     </div>
@@ -659,7 +573,7 @@ function SettingsView() {
   )
 }
 
-function Sidebar({ view, setView, navigate }) {
+function Sidebar({ view, setView, navigate, setSidebarOpen }) {
   const items = [
     { key: 'dashboard', label: 'Dashboard', icon: iconDash },
     { key: 'especialistas', label: 'Especialistas', icon: iconUser },
@@ -672,6 +586,7 @@ function Sidebar({ view, setView, navigate }) {
       <div className="px-7 py-7 border-b border-slate-700 flex items-center gap-4">
         <div className="w-11 h-11 bg-teal-500 rounded-2xl flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-teal-500/20">R</div>
         <div>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden absolute right-4 top-7 text-slate-400">{iconX}</button>
           <p className="text-white font-bold text-lg leading-tight">Painel Admin</p>
           <p className="text-slate-400 text-xs mt-0.5 uppercase tracking-wider font-semibold">Rivera Odonto</p>
         </div>
@@ -681,7 +596,7 @@ function Sidebar({ view, setView, navigate }) {
         {items.map((item) => (
           <button
             key={item.key}
-            onClick={() => setView(item.key)}
+            onClick={() => { setView(item.key); setSidebarOpen(false) }}
             className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-base font-semibold transition-all duration-200 text-left ${view === item.key
               ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
               : 'text-slate-400 hover:bg-slate-800 hover:text-white'
@@ -744,11 +659,6 @@ export default function AdminDashboard({ initialView = 'dashboard' }) {
 
   const currentViewKey = typeof view === 'string' ? view : view.name;
 
-  const handleSetView = (v) => {
-    setView(v)
-    setSidebarOpen(false)
-  }
-
   if (loading) return (
     <div className="flex h-screen items-center justify-center bg-gray-50">
       <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
@@ -767,30 +677,35 @@ export default function AdminDashboard({ initialView = 'dashboard' }) {
 
       {/* Sidebar Container */}
       <div className={`fixed inset-y-0 left-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0 transition-transform duration-300 ease-in-out z-[70] lg:z-auto`}>
-        <Sidebar view={currentViewKey} setView={handleSetView} navigate={navigate} />
+        <Sidebar view={currentViewKey} setView={setView} navigate={navigate} setSidebarOpen={setSidebarOpen} />
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header Mobile */}
-        <header className="lg:hidden bg-white border-b border-gray-100 flex items-center justify-between px-6 py-4 sticky top-0 z-40 shadow-sm">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Mobile Header */}
+        <header className="lg:hidden bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0 z-50 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-teal-500/20">R</div>
+            <p className="font-bold text-gray-800 text-lg">Painel Admin</p>
+          </div>
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 -ml-2 text-gray-500 hover:text-teal-600 transition-colors"
+            className="p-2.5 bg-gray-50 rounded-xl text-gray-600 hover:bg-gray-100 transition"
           >
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            {iconDash}
           </button>
-          <span className="font-bold text-gray-800 text-lg">Painel Administrativo</span>
-          <div className="w-10" />
         </header>
 
-        {/* View Content Area */}
-        <main className="flex-1 overflow-y-auto w-full">
-          {currentViewKey === 'dashboard' && <DashboardView doctors={doctors} posts={posts} appointments={appointments} setView={handleSetView} />}
-          {currentViewKey === 'especialistas' && <EspecialistasView doctors={doctors} setDoctors={setDoctors} setView={handleSetView} />}
-          {currentViewKey === 'agendamentos' && <AgendamentosView appointments={appointments} setAppointments={setAppointments} filterDoctorId={view?.doctorId} doctors={doctors} />}
+        <main className="flex-1 overflow-y-auto">
+          {currentViewKey === 'dashboard' && <DashboardView doctors={doctors} posts={posts} appointments={appointments} setView={setView} />}
+          {currentViewKey === 'especialistas' && <EspecialistasView doctors={doctors} setDoctors={setDoctors} setView={setView} />}
+          {currentViewKey === 'agendamentos' && (
+            <AgendamentosView
+              appointments={appointments}
+              setAppointments={setAppointments}
+              filterDoctorId={typeof view === 'object' ? view.doctorId : null}
+              doctors={doctors}
+            />
+          )}
           {currentViewKey === 'blog' && <BlogManageView posts={posts} setPosts={setPosts} />}
           {currentViewKey === 'settings' && <SettingsView />}
         </main>
