@@ -19,8 +19,8 @@ export default function Agendamento() {
   const [form, setForm] = useState({
     doctorId: '',
     doctorName: '',
-    name: '',
-    phone: '',
+    patientName: '',
+    patientPhone: '',
     date: '',
     time: '',
   })
@@ -74,8 +74,8 @@ export default function Agendamento() {
       await db.saveAppointment({
         doctorId: form.doctorId,
         doctorName: form.doctorName,
-        patientName: form.name,
-        patientPhone: form.phone,
+        patientName: form.patientName,
+        patientPhone: form.patientPhone,
         date: form.date,
         time: form.time,
         status: 'Aguardando'
@@ -134,7 +134,7 @@ export default function Agendamento() {
                   </p>
                   <p className="text-gray-400 text-sm mb-8">Entraremos em contato em breve para confirmar.</p>
                   <button
-                    onClick={() => { setSubmitted(false); setForm({ doctorId: doctorsList[0]?.id, doctorName: doctorsList[0]?.name, name: '', phone: '', date: '', time: '' }) }}
+                    onClick={() => { setSubmitted(false); setForm({ doctorId: doctorsList[0]?.id, doctorName: doctorsList[0]?.name, patientName: '', patientPhone: '', date: '', time: '' }) }}
                     className="border-2 border-teal-500 text-teal-600 font-semibold px-8 py-3 rounded-full hover:bg-teal-500 hover:text-white transition-colors"
                   >
                     Novo Agendamento
@@ -168,8 +168,8 @@ export default function Agendamento() {
                       <label className="block text-sm font-semibold text-gray-600 mb-2">Nome Completo</label>
                       <input
                         type="text"
-                        name="name"
-                        value={form.name}
+                        name="patientName"
+                        value={form.patientName}
                         onChange={handle}
                         required
                         className="w-full border border-gray-400 bg-gray-50 rounded-xl px-4 py-3.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 text-base"
@@ -182,8 +182,8 @@ export default function Agendamento() {
                       <label className="block text-sm font-semibold text-gray-600 mb-2">Telefone</label>
                       <input
                         type="tel"
-                        name="phone"
-                        value={form.phone}
+                        name="patientPhone"
+                        value={form.patientPhone}
                         onChange={handle}
                         className="w-full border border-gray-400 bg-gray-50 rounded-xl px-4 py-3.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 text-base"
                       />

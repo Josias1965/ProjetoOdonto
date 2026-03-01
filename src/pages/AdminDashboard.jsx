@@ -16,32 +16,34 @@ const iconCalendar = <svg className="w-6 h-6" fill="none" stroke="currentColor" 
 const iconDots = <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
 const iconChevronDown = <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
 
-function ActionMenu({ onEdit, onRemove, onSchedule, type }) {
+function ActionMenu({ onEdit, onRemove, onSchedule }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="relative inline-block text-left">
       <button
+        type="button"
         onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
-        className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl hover:bg-white hover:border-teal-400 text-gray-700 transition-all shadow-sm"
+        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:border-teal-400 text-gray-700 transition-all shadow-sm hover:shadow-md active:scale-95"
       >
         <span className="text-sm font-bold">Ações</span>
-        <span className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
+        <span className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
           {iconChevronDown}
         </span>
       </button>
+
       {open && (
         <>
           <div className="fixed inset-0 z-[80]" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-[90] py-2 animate-in fade-in zoom-in duration-100 origin-top-right">
+          <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[90] py-2 animate-in fade-in zoom-in duration-200 origin-top-right overflow-hidden">
             {onSchedule && (
-              <button onClick={() => { onSchedule(); setOpen(false) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2">
-                Agendar
+              <button onClick={() => { onSchedule(); setOpen(false) }} className="w-full text-left px-5 py-3 text-sm font-bold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-3 border-b border-gray-50">
+                <span className="w-2 h-2 rounded-full bg-blue-400" /> Agendar
               </button>
             )}
-            <button onClick={() => { onEdit(); setOpen(false) }} className="w-full text-left px-4 py-3 text-sm font-bold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-2 border-b border-gray-50">
+            <button onClick={() => { onEdit(); setOpen(false) }} className="w-full text-left px-5 py-3 text-sm font-bold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors flex items-center gap-3 border-b border-gray-50">
               <span className="w-2 h-2 rounded-full bg-teal-400" /> Editar
             </button>
-            <button onClick={() => { onRemove(); setOpen(false) }} className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+            <button onClick={() => { onRemove(); setOpen(false) }} className="w-full text-left px-5 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-red-400" /> Remover
             </button>
           </div>
@@ -285,7 +287,7 @@ function EspecialistasView({ doctors, setDoctors, setView }) {
 }
 
 function AgendamentosView({ appointments, setAppointments, filterDoctorId, doctors }) {
-  const empty = { patientName: '', doctorId: filterDoctorId || doctors[0]?.id, doctorName: doctors.find(d => d.id === (filterDoctorId || doctors[0]?.id))?.name, date: '', time: '', phone: '', status: 'Aguardando' }
+  const empty = { patientName: '', doctorId: filterDoctorId || doctors[0]?.id, doctorName: doctors.find(d => d.id === (filterDoctorId || doctors[0]?.id))?.name, date: '', time: '', patientPhone: '', status: 'Aguardando' }
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState(empty)
 
@@ -424,7 +426,7 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
 }
 
 function BlogManageView({ posts, setPosts }) {
-  const empty = { title: '', tag: '', date: '', img: '', excerpt: '', content: '' }
+  const empty = { title: '', tag: '', date: '', img: '', excerpt: '', content: '', author: '', readTime: '' }
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState(empty)
 
@@ -462,9 +464,12 @@ function BlogManageView({ posts, setPosts }) {
   }
 
   const fields = [
+    { key: 'id', label: 'Slug (ID) *', placeholder: 'ex: como-escovar-os-dentes' },
     { key: 'title', label: 'Título *' },
+    { key: 'author', label: 'Autor' },
     { key: 'tag', label: 'Categoria', select: Object.keys(tagColors) },
     { key: 'date', label: 'Data', type: 'date' },
+    { key: 'readTime', label: 'Tempo de Leitura (ex: 5 min)' },
     { key: 'img', label: 'URL da Imagem' },
     { key: 'excerpt', label: 'Resumo *', textarea: true, rows: 2, maxLength: 200 },
     { key: 'content', label: 'Conteúdo *', textarea: true, rows: 8 },
