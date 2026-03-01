@@ -19,10 +19,22 @@ const iconChevronDown = <svg className="w-4 h-4" fill="none" stroke="currentColo
 const FIX_DRIVE_URL = (url) => {
   if (!url || typeof url !== 'string') return url;
   if (url.includes('drive.google.com')) {
-    const dMatch = url.match(/\/d\/([^/#?&]+)/);
-    if (dMatch) return `https://drive.google.com/uc?id=${dMatch[1]}`;
-    const idMatch = url.match(/[?&]id=([^&#]+)/);
-    if (idMatch) return `https://drive.google.com/uc?id=${idMatch[1]}`;
+    let fileId = '';
+    // Formato: .../file/d/FILE_ID/...
+    const dMatch = url.match(/\/file\/d\/([^/#?&]+)/) || url.match(/\/d\/([^/#?&]+)/);
+    if (dMatch) fileId = dMatch[1];
+
+    // Formato: ...?id=FILE_ID
+    if (!fileId) {
+      const idMatch = url.match(/[?&]id=([^&#]+)/);
+      if (idMatch) fileId = idMatch[1];
+    }
+
+    if (fileId) {
+      // Usando thumbnailer do Google Drive que é mais confiável para renderizar no navegador
+      // lh3.googleusercontent.com ou drive.google.com/thumbnail?id=
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+    }
   }
   return url;
 };
