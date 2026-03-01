@@ -198,7 +198,8 @@ function EspecialistasView({ doctors, setDoctors, setView }) {
       else setDoctors((p) => p.map((d) => (d.id === form.id ? saved : d)))
       setModal(null)
     } catch (err) {
-      alert('Erro ao salvar especialista')
+      console.error('Erro ao salvar especialista:', err)
+      alert(`Erro ao salvar especialista: ${err.message || 'Verifique os dados e tente novamente.'}`)
     }
   }
   const remove = async (id) => {
@@ -309,7 +310,8 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
       else setAppointments(p => p.map(a => (a.id === form.id ? saved : a)))
       setModal(null)
     } catch (err) {
-      alert('Erro ao salvar agendamento')
+      console.error('Erro ao salvar agendamento:', err)
+      alert(`Erro ao salvar agendamento: ${err.message || 'Verifique os dados e tente novamente.'}`)
     }
   }
   const remove = async (id) => {
@@ -441,7 +443,8 @@ function BlogManageView({ posts, setPosts }) {
       else setPosts((p) => p.map((x) => (x.id === form.id ? saved : x)))
       setModal(null)
     } catch (err) {
-      alert('Erro ao salvar postagem')
+      console.error('Erro ao salvar postagem:', err)
+      alert(`Erro ao salvar postagem: ${err.message || 'Verifique os dados e tente novamente.'}`)
     }
   }
   const remove = async (id) => {
