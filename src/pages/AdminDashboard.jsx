@@ -290,44 +290,44 @@ function AgendamentosView({ appointments, setAppointments, filterDoctorId, docto
   const getDocName = (id) => doctors.find(d => d.id === id)?.name || 'Especialista'
 
   return (
-    <div className="p-6 lg:p-10 text-gray-800">
+    <div className="p-3 lg:p-10 text-gray-800">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
         <h1 className="text-3xl font-bold">{filterDoctorId ? `Agendamentos de ${getDocName(filterDoctorId)}` : 'Agendamentos'}</h1>
         <button onClick={openAdd} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 px-6 py-3 rounded-xl text-white font-bold flex items-center justify-center gap-2">{iconPlus} Novo</button>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
-        <table className="w-full min-w-[420px]">
+        <table className="w-full min-w-[380px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-3 py-4 text-left font-bold text-gray-500 text-xs uppercase text-[10px]">Paciente</th>
-              <th className="px-3 py-4 text-center font-bold text-gray-500 text-xs uppercase text-[10px]">Data/Hora</th>
-              <th className="px-2 py-4 text-center font-bold text-gray-500 text-xs uppercase text-[10px]">Status</th>
-              <th className="px-3 py-4 text-right font-bold text-gray-500 text-xs uppercase text-[10px] w-[130px]">Ações</th>
+              <th className="px-2 py-4 text-left font-bold text-gray-500 text-[10px] uppercase">Paciente</th>
+              <th className="px-2 py-4 text-center font-bold text-gray-500 text-[10px] uppercase">Data/Hora</th>
+              <th className="px-1 py-4 text-center font-bold text-gray-500 text-[10px] uppercase w-[40px]">S</th>
+              <th className="px-2 py-4 text-right font-bold text-gray-500 text-[10px] uppercase w-[115px]">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filtered.map(a => (
               <tr key={a.id} className="hover:bg-gray-50 transition">
-                <td className="px-3 py-4">
+                <td className="px-2 py-4">
                   <p className="font-bold text-sm leading-tight mb-1">{a.patientName}</p>
                   <p className="text-[10px] text-gray-400 line-clamp-1">{a.doctorName || getDocName(a.doctorId)}</p>
                 </td>
-                <td className="px-3 py-4 text-center text-[11px] leading-snug">
+                <td className="px-2 py-4 text-center text-[11px] leading-snug">
                   {a.date} <br /> <span className="font-bold">{a.time}</span>
                 </td>
-                <td className="px-2 py-4">
+                <td className="px-1 py-4">
                   <div className="flex justify-center">
                     <div
                       title={a.status}
-                      className={`w-3.5 h-3.5 rounded-full shadow-sm ${a.status === 'Confirmado' ? 'bg-green-500' :
+                      className={`w-3 h-3 rounded-full shadow-sm ${a.status === 'Confirmado' ? 'bg-green-500' :
                         a.status === 'Cancelado' ? 'bg-red-500' :
                           'bg-yellow-400'
                         }`}
                     />
                   </div>
                 </td>
-                <td className="px-3 py-4 text-right">
+                <td className="px-2 py-4 text-right">
                   <ActionSelect onEdit={() => openEdit(a)} onRemove={() => remove(a.id)} />
                 </td>
               </tr>
