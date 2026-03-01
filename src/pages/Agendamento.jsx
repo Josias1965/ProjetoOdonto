@@ -251,14 +251,15 @@ export default function Agendamento() {
                               className={`py-3 rounded-xl text-sm font-bold transition-all border ${isBooked
                                   ? 'bg-red-500 text-white border-red-500 opacity-90 cursor-not-allowed'
                                   : isSelected
-                                    ? 'bg-teal-600 text-white border-teal-600 ring-4 ring-teal-100 shadow-md scale-105'
-                                    : 'bg-white text-gray-700 border-gray-200 hover:border-teal-400 hover:bg-teal-50 shadow-sm'
+                                    ? 'bg-gray-800 text-white border-gray-800 ring-4 ring-teal-100 shadow-md scale-105'
+                                    : 'text-white border-transparent hover:opacity-90 shadow-sm'
                                 }`}
+                              style={!isBooked && !isSelected ? { backgroundColor: '#2e948a' } : {}}
                             >
                               {t}
-                              {isBooked && <span className="block text-[8px] uppercase leading-none mt-0.5">Ocupado</span>}
-                              {!isBooked && !isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5 text-gray-400">Livre</span>}
-                              {isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5 text-teal-100">Sua Escolha</span>}
+                              {isBooked && <span className="block text-[8px] uppercase leading-none mt-0.5 opacity-80">Ocupado</span>}
+                              {!isBooked && !isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5 opacity-80">Livre</span>}
+                              {isSelected && <span className="block text-[8px] uppercase leading-none mt-0.5 opacity-80">Sua Escolha</span>}
                             </button>
                           )
                         })}
