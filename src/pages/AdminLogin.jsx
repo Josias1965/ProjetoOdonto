@@ -3,35 +3,27 @@ import { useNavigate } from 'react-router-dom'
 import * as db from '../lib/supabaseService'
 
 export default function AdminLogin() {
-  const [form, setForm] = useState({ user: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
-  const [storedCreds, setStoredCreds] = useState(null)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const fetchCreds = async () => {
-      try {
-        const creds = await db.getAdmin()
-        if (creds) setStoredCreds(creds)
-      } catch (err) {
-        console.error('Erro ao buscar credenciais:', err)
-      }
-    }
-    fetchCreds()
-  }, [])
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault()
-    const validUser = storedCreds?.user || 'admin'
-    const validPass = storedCreds?.password || 'admin123'
+    setLoading(true)
+    setError('')
 
-    if (form.user === validUser && form.password === validPass) {
-      navigate('/admin/dashboard')
-    } else {
-      setError('Usuário ou senha inválidos.')
+    try {
+      await db.signIn(form.email, form.password)
+      navigate('/admin')
+    } catch (err) {
+      console.error('Erro no login:', err)
+      setError(err.message || 'Credenciais inválidas ou erro de conexão.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -49,18 +41,18 @@ export default function AdminLogin() {
           <form onSubmit={submit} className="space-y-6">
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Usuário</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">E-mail</label>
               <div className="flex items-center border border-gray-300 rounded-xl px-4 py-3.5 focus-within:ring-2 focus-within:ring-teal-400 focus-within:border-transparent transition">
                 <svg className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <input
-                  type="text"
-                  name="user"
-                  value={form.user}
+                  type="email"
+                  name="email"
+                  value={form.email}
                   onChange={handle}
                   required
-                  placeholder="Digite seu usuário"
+                  placeholder="Digite seu e-mail"
                   className="flex-1 text-base text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                 />
               </div>
@@ -107,9 +99,10 @@ export default function AdminLogin() {
 
             <button
               type="submit"
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-lg py-4 rounded-xl transition-colors shadow-md mt-2"
+              disabled={loading}
+              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-lg py-4 rounded-xl transition-colors shadow-md mt-2 disabled:opacity-50"
             >
-              Entrar no Painel
+              {loading ? 'Entrando...' : 'Entrar no Painel'}
             </button>
           </form>
         </div>
