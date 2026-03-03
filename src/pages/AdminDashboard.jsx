@@ -439,138 +439,208 @@ function BlogManageView({ posts, setPosts }) {
 }
 
 function SettingsView({ navigate }) {
+  const [users, setUsers] = useState([])
   const [currentUser, setCurrentUser] = useState(null)
-  const [pwdForm, setPwdForm] = useState({ password: '', confirm: '' })
-  const [regForm, setRegForm] = useState({ email: '', password: '' })
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState(null) // 'create' | 'password'
+  const [form, setForm] = useState({ email: '', password: '', confirm: '' })
 
-  useEffect(() => {
-    db.getCurrentUser().then(setCurrentUser)
-  }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const [uList, self] = await Promise.all([db.listUsers(), db.getCurrentUser()])
+      setUsers(uList || [])
+      setCurrentUser(self)
+    } catch (e) {
+      console.error(e)
+      alert('Erro ao carregar usuários. Certifique-se de ter rodado o SQL no Supabase.')
+    } finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadData() }, [])
+
+  const handleCreate = async (e) => {
+    e.preventDefault()
+    if (!form.email || !form.password) return alert('Preencha os campos.')
+    try {
+      await db.registerNewAdmin(form.email, form.password)
+      alert('Novo administrador cadastrado! Notifique o colega.')
+      setModal(null)
+      loadData()
+    } catch (e) { alert('Erro: ' + e.message) }
+  }
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault()
-    if (pwdForm.password !== pwdForm.confirm) return alert('As senhas não coincidem.')
-    setLoading(true)
+    if (form.password !== form.confirm) return alert('As senhas não coincidem.')
     try {
-      await db.updateUserPassword(pwdForm.password)
+      await db.updateUserPassword(form.password)
       alert('Senha atualizada com sucesso!')
-      setPwdForm({ password: '', confirm: '' })
-    } catch (e) { alert('Erro ao atualizar senha: ' + e.message) }
-    setLoading(false)
+      setModal(null)
+    } catch (e) { alert('Erro: ' + e.message) }
   }
 
-  const handleRegisterNew = async (e) => {
-    e.preventDefault()
-    if (!confirm('Ao cadastrar um novo usuário, sua sessão atual será encerrada para validar o novo registro. Deseja continuar?')) return
-    setLoading(true)
+  const removeUser = async (user) => {
+    const isSelf = user.id === currentUser?.id
+    const msg = isSelf
+      ? 'AVISO: Você está excluindo sua PRÓPRIA conta. Você será deslogado e perderá acesso. Confirmar?'
+      : `Deseja remover o acesso de ${user.email} permanentemente?`
+
+    if (!confirm(msg)) return
+
     try {
-      await db.registerNewAdmin(regForm.email, regForm.password)
-      alert('Novo administrador cadastrado! Você será deslogado para segurança.')
-      await db.signOut()
-      navigate('/admin')
-    } catch (e) { alert('Erro ao cadastrar: ' + e.message) }
-    setLoading(false)
+      if (isSelf) {
+        await db.deleteCurrentAccount()
+        navigate('/admin')
+      } else {
+        await db.adminRemoveUser(user.id)
+        alert('Usuário removido.')
+        loadData()
+      }
+    } catch (e) { alert('Erro ao remover usuário.') }
   }
 
-  const handleDeleteAccount = async () => {
-    if (!confirm('AVISO CRÍTICO: Esta ação excluirá PERMANENTEMENTE seu acesso administrativo. Você perderá acesso a este painel imediatamente. Confirmar exclusão?')) return
-    try {
-      await db.deleteCurrentAccount()
-      alert('Sua conta foi removida.')
-      navigate('/admin')
-    } catch (e) {
-      alert('Erro ao excluir conta. Verifique se a função SQL foi criada no Supabase.')
-      console.error(e)
-    }
-  }
+  if (loading) return <div className="p-10 flex justify-center"><div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div></div>
 
   return (
-    <div className="p-6 lg:p-10 text-gray-800 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Ajustes de Conta</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Card: Segurança da Conta Atual */}
-        <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-teal-50 text-teal-600 rounded-lg">{iconSettings}</div>
-            <h2 className="text-xl font-bold">Minha Segurança</h2>
-          </div>
-
-          <p className="text-sm text-gray-500">Logado como: <span className="font-bold text-teal-600">{currentUser?.email}</span></p>
-
-          <form onSubmit={handleUpdatePassword} className="space-y-4">
-            <div>
-              <label className="text-sm font-bold block mb-1">Nova Senha</label>
-              <input
-                type="password"
-                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-teal-400 focus:outline-none"
-                value={pwdForm.password}
-                onChange={e => setPwdForm({ ...pwdForm, password: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="text-sm font-bold block mb-1">Confirmar Nova Senha</label>
-              <input
-                type="password"
-                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-teal-400 focus:outline-none"
-                value={pwdForm.confirm}
-                onChange={e => setPwdForm({ ...pwdForm, confirm: e.target.value })}
-                required
-              />
-            </div>
-            <button disabled={loading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors disabled:opacity-50">
-              {loading ? 'Processando...' : 'Alterar Minha Senha'}
-            </button>
-          </form>
-
-          <div className="pt-6 border-t border-gray-100 mt-6">
-            <p className="text-xs text-gray-400 mb-3">Zona de Perigo</p>
-            <button onClick={handleDeleteAccount} className="text-red-500 hover:text-red-700 font-bold text-sm flex items-center gap-2">
-              Excluir permanentemente minha conta
-            </button>
-          </div>
+    <div className="p-6 lg:p-10 text-gray-800 max-w-5xl mx-auto font-sans">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Gerenciar Acessos</h1>
+          <p className="text-gray-500 mt-1">Controle quem pode gerenciar a Rivera Odontologia</p>
         </div>
+        <button
+          onClick={() => { setForm({ email: '', password: '' }); setModal('create') }}
+          className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-2xl flex items-center gap-2 shadow-lg shadow-teal-600/20 transition-all active:scale-95"
+        >
+          {iconPlus} Novo Administrador
+        </button>
+      </div>
 
-        {/* Card: Cadastrar Novo Admin */}
-        <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">{iconPlus}</div>
-            <h2 className="text-xl font-bold">Novo Administrador</h2>
-          </div>
-
-          <p className="text-sm text-gray-500 mb-4">Adicione um novo colega para gerenciar a clínica.</p>
-
-          <form onSubmit={handleRegisterNew} className="space-y-4">
-            <div>
-              <label className="text-sm font-bold block mb-1">E-mail do novo usuário</label>
-              <input
-                type="email"
-                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                value={regForm.email}
-                onChange={e => setRegForm({ ...regForm, email: e.target.value })}
-                placeholder="exemplo@email.com"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-sm font-bold block mb-1">Senha Inicial</label>
-              <input
-                type="password"
-                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                value={regForm.password}
-                onChange={e => setRegForm({ ...regForm, password: e.target.value })}
-                required
-              />
-            </div>
-            <button disabled={loading} className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl shadow-md transition-colors disabled:opacity-50">
-              {loading ? 'Cadastrando...' : 'Cadastrar novo usuário'}
-            </button>
-          </form>
-          <p className="text-[10px] text-gray-400 leading-tight">Nota: O novo usuário precisará confirmar o e-mail se a configuração de confirmação estiver ligada no Supabase.</p>
+      <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Administrador</th>
+                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {users.map(u => (
+                <tr key={u.id} className="hover:bg-gray-50/50 transition-colors group">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                        {iconUser}
+                      </div>
+                      <div>
+                        <div className="font-bold text-gray-900 flex items-center gap-2">
+                          {u.email}
+                          {u.id === currentUser?.id && <span className="bg-teal-100 text-teal-700 text-[10px] px-2 py-0.5 rounded-full uppercase">Você</span>}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {u.last_sign_in_at ? `Último acesso: ${new Date(u.last_sign_in_at).toLocaleDateString()}` : 'Nunca acessou'}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {u.id === currentUser?.id && (
+                        <button
+                          onClick={() => { setForm({ password: '', confirm: '' }); setModal('password') }}
+                          className="bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all"
+                        >
+                          Alterar Senha
+                        </button>
+                      )}
+                      <button
+                        onClick={() => removeUser(u)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all ${u.id === currentUser?.id ? 'text-red-300 hover:text-red-500 hover:bg-red-50' : 'bg-white border border-red-100 text-red-500 hover:bg-red-50'}`}
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Modal: Novo Admin */}
+      {modal === 'create' && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in fade-in zoom-in duration-200">
+            <h2 className="text-2xl font-bold mb-6 text-center">Novo Administrador</h2>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <label className="text-sm font-bold block mb-1">E-mail</label>
+                <input
+                  type="email"
+                  className="w-full border-gray-200 border rounded-2xl p-4 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:outline-none transition-all"
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  placeholder="exemplo@email.com"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-bold block mb-1">Senha Temporária</label>
+                <input
+                  type="password"
+                  className="w-full border-gray-200 border rounded-2xl p-4 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:outline-none transition-all"
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-3 pt-4">
+                <button type="submit" className="w-full bg-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-600/30 hover:bg-teal-700 transition-all uppercase tracking-wider text-sm">Cadastrar Efetivamente</button>
+                <button type="button" onClick={() => setModal(null)} className="w-full text-gray-400 font-bold py-2 text-sm hover:text-gray-600 transition-all">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Alterar Senha (Self) */}
+      {modal === 'password' && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 animate-in fade-in zoom-in duration-200">
+            <h2 className="text-2xl font-bold mb-6 text-center">Segurança da Conta</h2>
+            <p className="text-sm text-center text-gray-500 mb-6">Altere sua senha de acesso</p>
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div>
+                <label className="text-sm font-bold block mb-1">Nova Senha</label>
+                <input
+                  type="password"
+                  className="w-full border-gray-200 border rounded-2xl p-4 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:outline-none transition-all"
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-bold block mb-1">Confirmar Nova Senha</label>
+                <input
+                  type="password"
+                  className="w-full border-gray-200 border rounded-2xl p-4 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:outline-none transition-all"
+                  value={form.confirm}
+                  onChange={e => setForm({ ...form, confirm: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-3 pt-4">
+                <button type="submit" className="w-full bg-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-600/30 hover:bg-teal-700 transition-all">Atualizar Minha Senha</button>
+                <button type="button" onClick={() => setModal(null)} className="w-full text-gray-400 font-bold py-2 text-sm hover:text-gray-600 transition-all">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -35,6 +35,17 @@ export const deleteCurrentAccount = async () => {
     if (signOutError) throw signOutError
 }
 
+export const listUsers = async () => {
+    const { data, error } = await supabase.rpc('list_admin_users')
+    if (error) throw error
+    return data
+}
+
+export const adminRemoveUser = async (userId) => {
+    const { error } = await supabase.rpc('admin_delete_user', { target_user_id: userId })
+    if (error) throw error
+}
+
 export const getDoctors = async () => {
     const { data, error } = await supabase.from('doctors').select('*')
     if (error) throw error
