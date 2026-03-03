@@ -18,7 +18,7 @@ export default function AdminLogin() {
 
     try {
       await db.signIn(form.email, form.password)
-      navigate('/admin')
+      navigate('/admin/dashboard')
     } catch (err) {
       console.error('Erro no login:', err)
       setError(err.message || 'Credenciais inválidas ou erro de conexão.')

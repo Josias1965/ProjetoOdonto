@@ -637,15 +637,20 @@ export default function AdminDashboard({ initialView = 'dashboard' }) {
           navigate('/admin')
           return
         }
-        const [d, p, a] = await Promise.all([db.getDoctors(), db.getPosts(), db.getAppointments()])
-        setDoctors(d || [])
-        setPosts(p || [])
-        setAppointments(a || [])
+        const [d, p, a] = await Promise.all([
+          db.getDoctors().catch(() => []),
+          db.getPosts().catch(() => []),
+          db.getAppointments().catch(() => [])
+        ])
+        setDoctors(d)
+        setPosts(p)
+        setAppointments(a)
       } catch (e) {
-        console.error(e)
+        console.error('Erro ao verificar usuário:', e)
         navigate('/admin')
+      } finally {
+        setLoading(false)
       }
-      finally { setLoading(false) }
     }
     load()
   }, [navigate])
