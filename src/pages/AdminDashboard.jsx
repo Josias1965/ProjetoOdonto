@@ -438,25 +438,139 @@ function BlogManageView({ posts, setPosts }) {
   )
 }
 
-function SettingsView() {
-  const [form, setForm] = useState({ user: '', password: '', confirm: '' })
+function SettingsView({ navigate }) {
+  const [currentUser, setCurrentUser] = useState(null)
+  const [pwdForm, setPwdForm] = useState({ password: '', confirm: '' })
+  const [regForm, setRegForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
-  const save = async (e) => {
+
+  useEffect(() => {
+    db.getCurrentUser().then(setCurrentUser)
+  }, [])
+
+  const handleUpdatePassword = async (e) => {
     e.preventDefault()
-    if (form.password !== form.confirm) return alert('Senhas desiguais')
+    if (pwdForm.password !== pwdForm.confirm) return alert('As senhas não coincidem.')
     setLoading(true)
-    try { await db.updateAdmin({ user: form.user, password: form.password }); alert('Sucesso!') } catch (e) { alert('Erro') }
+    try {
+      await db.updateUserPassword(pwdForm.password)
+      alert('Senha atualizada com sucesso!')
+      setPwdForm({ password: '', confirm: '' })
+    } catch (e) { alert('Erro ao atualizar senha: ' + e.message) }
     setLoading(false)
   }
+
+  const handleRegisterNew = async (e) => {
+    e.preventDefault()
+    if (!confirm('Ao cadastrar um novo usuário, sua sessão atual será encerrada para validar o novo registro. Deseja continuar?')) return
+    setLoading(true)
+    try {
+      await db.registerNewAdmin(regForm.email, regForm.password)
+      alert('Novo administrador cadastrado! Você será deslogado para segurança.')
+      await db.signOut()
+      navigate('/admin')
+    } catch (e) { alert('Erro ao cadastrar: ' + e.message) }
+    setLoading(false)
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!confirm('AVISO CRÍTICO: Esta ação excluirá PERMANENTEMENTE seu acesso administrativo. Você perderá acesso a este painel imediatamente. Confirmar exclusão?')) return
+    try {
+      await db.deleteCurrentAccount()
+      alert('Sua conta foi removida.')
+      navigate('/admin')
+    } catch (e) {
+      alert('Erro ao excluir conta. Verifique se a função SQL foi criada no Supabase.')
+      console.error(e)
+    }
+  }
+
   return (
-    <div className="p-6 lg:p-10 max-w-lg text-gray-800">
-      <h1 className="text-3xl font-bold mb-8">Configurações</h1>
-      <form onSubmit={save} className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-        <div><label className="text-sm font-bold block mb-1">Usuário</label><input className="w-full border rounded-xl p-3" value={form.user} onChange={e => setForm({ ...form, user: e.target.value })} /></div>
-        <div><label className="text-sm font-bold block mb-1">Senha</label><input className="w-full border rounded-xl p-3" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></div>
-        <div><label className="text-sm font-bold block mb-1">Confirmar</label><input className="w-full border rounded-xl p-3" type="password" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} /></div>
-        <button disabled={loading} className="w-full bg-teal-600 text-white font-bold py-3 rounded-xl mt-4 shadow-md">{loading ? 'Salvando...' : 'Salvar Alterações'}</button>
-      </form>
+    <div className="p-6 lg:p-10 text-gray-800 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8">Ajustes de Conta</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Card: Segurança da Conta Atual */}
+        <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-teal-50 text-teal-600 rounded-lg">{iconSettings}</div>
+            <h2 className="text-xl font-bold">Minha Segurança</h2>
+          </div>
+
+          <p className="text-sm text-gray-500">Logado como: <span className="font-bold text-teal-600">{currentUser?.email}</span></p>
+
+          <form onSubmit={handleUpdatePassword} className="space-y-4">
+            <div>
+              <label className="text-sm font-bold block mb-1">Nova Senha</label>
+              <input
+                type="password"
+                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-teal-400 focus:outline-none"
+                value={pwdForm.password}
+                onChange={e => setPwdForm({ ...pwdForm, password: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold block mb-1">Confirmar Nova Senha</label>
+              <input
+                type="password"
+                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-teal-400 focus:outline-none"
+                value={pwdForm.confirm}
+                onChange={e => setPwdForm({ ...pwdForm, confirm: e.target.value })}
+                required
+              />
+            </div>
+            <button disabled={loading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors disabled:opacity-50">
+              {loading ? 'Processando...' : 'Alterar Minha Senha'}
+            </button>
+          </form>
+
+          <div className="pt-6 border-t border-gray-100 mt-6">
+            <p className="text-xs text-gray-400 mb-3">Zona de Perigo</p>
+            <button onClick={handleDeleteAccount} className="text-red-500 hover:text-red-700 font-bold text-sm flex items-center gap-2">
+              Excluir permanentemente minha conta
+            </button>
+          </div>
+        </div>
+
+        {/* Card: Cadastrar Novo Admin */}
+        <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">{iconPlus}</div>
+            <h2 className="text-xl font-bold">Novo Administrador</h2>
+          </div>
+
+          <p className="text-sm text-gray-500 mb-4">Adicione um novo colega para gerenciar a clínica.</p>
+
+          <form onSubmit={handleRegisterNew} className="space-y-4">
+            <div>
+              <label className="text-sm font-bold block mb-1">E-mail do novo usuário</label>
+              <input
+                type="email"
+                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                value={regForm.email}
+                onChange={e => setRegForm({ ...regForm, email: e.target.value })}
+                placeholder="exemplo@email.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold block mb-1">Senha Inicial</label>
+              <input
+                type="password"
+                className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                value={regForm.password}
+                onChange={e => setRegForm({ ...regForm, password: e.target.value })}
+                required
+              />
+            </div>
+            <button disabled={loading} className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl shadow-md transition-colors disabled:opacity-50">
+              {loading ? 'Cadastrando...' : 'Cadastrar novo usuário'}
+            </button>
+          </form>
+          <p className="text-[10px] text-gray-400 leading-tight">Nota: O novo usuário precisará confirmar o e-mail se a configuração de confirmação estiver ligada no Supabase.</p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -487,7 +601,20 @@ function Sidebar({ view, setView, navigate, setSidebarOpen }) {
       </nav>
       <div className="p-6 border-t border-slate-800 space-y-2">
         <Link to="/" className="w-full flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-white transition-colors text-sm font-bold">{iconLink} Visualizar Site</Link>
-        <button onClick={() => navigate('/admin')} className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 transition-colors text-sm font-bold">{iconExit} Sair</button>
+        <button
+          onClick={async () => {
+            try {
+              await db.signOut();
+              navigate('/admin');
+            } catch (e) {
+              console.error('Logout error:', e);
+              navigate('/admin');
+            }
+          }}
+          className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 transition-colors text-sm font-bold"
+        >
+          {iconExit} Sair
+        </button>
       </div>
     </aside>
   )
@@ -505,15 +632,23 @@ export default function AdminDashboard({ initialView = 'dashboard' }) {
   useEffect(() => {
     const load = async () => {
       try {
+        const user = await db.getCurrentUser()
+        if (!user) {
+          navigate('/admin')
+          return
+        }
         const [d, p, a] = await Promise.all([db.getDoctors(), db.getPosts(), db.getAppointments()])
         setDoctors(d || [])
         setPosts(p || [])
         setAppointments(a || [])
-      } catch (e) { console.error(e) }
+      } catch (e) {
+        console.error(e)
+        navigate('/admin')
+      }
       finally { setLoading(false) }
     }
     load()
-  }, [])
+  }, [navigate])
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div></div>
 
@@ -536,7 +671,7 @@ export default function AdminDashboard({ initialView = 'dashboard' }) {
           {vk === 'especialistas' && <EspecialistasView doctors={doctors} setDoctors={setDoctors} setView={setView} />}
           {vk === 'agendamentos' && <AgendamentosView appointments={appointments} setAppointments={setAppointments} filterDoctorId={typeof view === 'object' ? view.doctorId : null} doctors={doctors} />}
           {vk === 'blog' && <BlogManageView posts={posts} setPosts={setPosts} />}
-          {vk === 'settings' && <SettingsView />}
+          {vk === 'settings' && <SettingsView navigate={navigate} />}
         </main>
       </div>
     </div>

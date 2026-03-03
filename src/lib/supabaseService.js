@@ -1,5 +1,40 @@
 import { supabase } from './supabase'
 
+export const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    return data
+}
+
+export const signOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+}
+
+export const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    return user
+}
+
+export const updateUserPassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) throw error
+    return data
+}
+
+export const registerNewAdmin = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) throw error
+    return data
+}
+
+export const deleteCurrentAccount = async () => {
+    const { error } = await supabase.rpc('delete_user_self')
+    if (error) throw error
+    const { error: signOutError } = await supabase.auth.signOut()
+    if (signOutError) throw signOutError
+}
+
 export const getDoctors = async () => {
     const { data, error } = await supabase.from('doctors').select('*')
     if (error) throw error
