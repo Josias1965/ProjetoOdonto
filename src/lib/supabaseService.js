@@ -46,6 +46,11 @@ export const adminRemoveUser = async (userId) => {
     if (error) throw error
 }
 
+export const adminResetPassword = async (userId, newPassword) => {
+    const { error } = await supabase.rpc('admin_reset_password', { target_user_id: userId, new_password: newPassword })
+    if (error) throw error
+}
+
 export const getDoctors = async () => {
     const { data, error } = await supabase.from('doctors').select('*')
     if (error) throw error

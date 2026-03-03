@@ -445,6 +445,8 @@ function SettingsView({ navigate }) {
   const [modal, setModal] = useState(null) // 'create' | 'password'
   const [form, setForm] = useState({ email: '', password: '', confirm: '' })
 
+  const [selectedUser, setSelectedUser] = useState(null)
+
   const loadData = async () => {
     setLoading(true)
     try {
@@ -464,7 +466,7 @@ function SettingsView({ navigate }) {
     if (!form.email || !form.password) return alert('Preencha os campos.')
     try {
       await db.registerNewAdmin(form.email, form.password)
-      alert('Novo administrador cadastrado! Notifique o colega.')
+      alert('Novo administrador cadastrado!')
       setModal(null)
       loadData()
     } catch (e) { alert('Erro: ' + e.message) }
@@ -474,9 +476,15 @@ function SettingsView({ navigate }) {
     e.preventDefault()
     if (form.password !== form.confirm) return alert('As senhas não coincidem.')
     try {
-      await db.updateUserPassword(form.password)
-      alert('Senha atualizada com sucesso!')
+      if (selectedUser?.id && selectedUser.id !== currentUser?.id) {
+        await db.adminResetPassword(selectedUser.id, form.password)
+        alert(`Senha de ${selectedUser.email} foi redefinida!`)
+      } else {
+        await db.updateUserPassword(form.password)
+        alert('Sua senha foi atualizada!')
+      }
       setModal(null)
+      setSelectedUser(null)
     } catch (e) { alert('Erro: ' + e.message) }
   }
 
@@ -522,14 +530,14 @@ function SettingsView({ navigate }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-4 py-4 sm:px-8 sm:py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Administrador</th>
-                <th className="px-4 py-4 sm:px-8 sm:py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Ações</th>
+                <th className="px-4 py-4 sm:px-8 sm:py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Admin</th>
+                <th className="px-4 py-4 sm:px-8 sm:py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right w-[120px]">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {users.map(u => (
                 <tr key={u.id} className="hover:bg-gray-50/50 transition-colors group">
-                  <td className="px-4 py-4 sm:px-8 sm:py-6">
+                  <td className="px-4 py-4 sm:px-8 sm:py-6 text-left">
                     <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                         {iconUser}
@@ -547,7 +555,11 @@ function SettingsView({ navigate }) {
                   </td>
                   <td className="px-4 py-4 sm:px-8 sm:py-6 text-right whitespace-nowrap">
                     <ActionSelect
-                      onEdit={u.id === currentUser?.id ? () => { setForm({ password: '', confirm: '' }); setModal('password') } : null}
+                      onEdit={() => {
+                        setSelectedUser(u);
+                        setForm({ password: '', confirm: '' });
+                        setModal('password');
+                      }}
                       onRemove={() => removeUser(u)}
                     />
                   </td>
