@@ -39,18 +39,18 @@ function ActionSelect({ onEdit, onRemove, onSchedule }) {
       <select
         onChange={(e) => {
           const val = e.target.value
-          if (val === 'edit') onEdit()
-          if (val === 'remove') onRemove()
+          if (val === 'edit' && onEdit) onEdit()
+          if (val === 'remove' && onRemove) onRemove()
           if (val === 'schedule' && onSchedule) onSchedule()
           e.target.value = ''
         }}
-        className="w-full bg-white border border-teal-500 text-teal-600 font-bold py-1 px-2 pr-6 rounded-lg focus:outline-none appearance-none text-[10px] transition-all shadow-sm cursor-pointer"
+        className="w-full bg-white border border-teal-500 text-teal-600 font-bold py-1 px-2 pr-6 rounded-lg focus:outline-none appearance-none text-xs transition-all shadow-sm cursor-pointer"
         defaultValue=""
       >
         <option value="" disabled>Ações</option>
         {onSchedule && <option value="schedule">Agendar</option>}
-        <option value="edit">Editar</option>
-        <option value="remove">Remover</option>
+        {onEdit && <option value="edit">Editar</option>}
+        {onRemove && <option value="remove">Remover</option>}
       </select>
       <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-teal-500">
         <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
@@ -522,46 +522,34 @@ function SettingsView({ navigate }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Administrador</th>
-                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Ações</th>
+                <th className="px-4 py-4 sm:px-8 sm:py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Administrador</th>
+                <th className="px-4 py-4 sm:px-8 sm:py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {users.map(u => (
                 <tr key={u.id} className="hover:bg-gray-50/50 transition-colors group">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                  <td className="px-4 py-4 sm:px-8 sm:py-6">
+                    <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                         {iconUser}
                       </div>
-                      <div>
-                        <div className="font-bold text-gray-900 flex items-center gap-2">
-                          {u.email}
-                          {u.id === currentUser?.id && <span className="bg-teal-100 text-teal-700 text-[10px] px-2 py-0.5 rounded-full uppercase">Você</span>}
+                      <div className="min-w-0">
+                        <div className="font-bold text-gray-900 flex items-center gap-2 text-sm sm:text-base truncate">
+                          <span className="truncate">{u.email}</span>
+                          {u.id === currentUser?.id && <span className="bg-teal-100 text-teal-700 text-[10px] px-2 py-0.5 rounded-full uppercase flex-shrink-0">Você</span>}
                         </div>
-                        <div className="text-xs text-gray-400">
-                          {u.last_sign_in_at ? `Último acesso: ${new Date(u.last_sign_in_at).toLocaleDateString()}` : 'Nunca acessou'}
+                        <div className="text-[10px] sm:text-xs text-gray-400 truncate">
+                          {u.last_sign_in_at ? `Acesso: ${new Date(u.last_sign_in_at).toLocaleDateString()}` : 'Nunca acessou'}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {u.id === currentUser?.id && (
-                        <button
-                          onClick={() => { setForm({ password: '', confirm: '' }); setModal('password') }}
-                          className="bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all"
-                        >
-                          Alterar Senha
-                        </button>
-                      )}
-                      <button
-                        onClick={() => removeUser(u)}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all ${u.id === currentUser?.id ? 'text-red-300 hover:text-red-500 hover:bg-red-50' : 'bg-white border border-red-100 text-red-500 hover:bg-red-50'}`}
-                      >
-                        Remover
-                      </button>
-                    </div>
+                  <td className="px-4 py-4 sm:px-8 sm:py-6 text-right whitespace-nowrap">
+                    <ActionSelect
+                      onEdit={u.id === currentUser?.id ? () => { setForm({ password: '', confirm: '' }); setModal('password') } : null}
+                      onRemove={() => removeUser(u)}
+                    />
                   </td>
                 </tr>
               ))}
